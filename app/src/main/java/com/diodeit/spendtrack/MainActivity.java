@@ -1,7 +1,9 @@
 package com.diodeit.spendtrack;
 
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewTreeObserver;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
@@ -24,12 +26,14 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_ADD       = "ADD";
     private static final String TAG_ANALYTICS = "ANALYTICS";
     private static final String TAG_SETTINGS  = "SETTINGS";
-    private static final String TAG_LOANS     = "LOANS";
 
     private BottomNavigationView bottomNav;
     private FragmentManager fragmentManager;
 
     private String currentTag = TAG_HOME;
+
+    // For keyboard detection
+    private int lastKeyboardState = -1;   // -1 unknown, 0 hidden, 1 shown
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,15 +73,55 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // KEYBOARD-AWARE NAV BAR
+    // Uses window visible frame (works on all devices, no
+    // dependency on windowSoftInputMode or WindowInsets quirks)
+    // ═══════════════════════════════════════════════════════════
     private void setupKeyboardAwareNav() {
-        final View root = findViewById(android.R.id.content);
+        final View root = findViewById(R.id.fragment_container);
+        if (root == null) return;
+
+        // Primary: WindowInsets (works on stock Android when adjustResize is on)
         ViewCompat.setOnApplyWindowInsetsListener(root, (v, insets) -> {
             boolean imeVisible = insets.isVisible(WindowInsetsCompat.Type.ime());
-            if (bottomNav != null) {
-                bottomNav.setVisibility(imeVisible ? View.GONE : View.VISIBLE);
-            }
+            setNavVisible(!imeVisible);
             return insets;
         });
+        ViewCompat.requestApplyInsets(root);
+
+        // Fallback: measure the visible frame. This catches cases where
+        // the OEM forces adjustPan and the WindowInsets listener never fires.
+        final View activityRoot = getWindow().getDecorView().getRootView();
+        activityRoot.getViewTreeObserver().addOnGlobalLayoutListener(
+                new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        Rect visibleFrame = new Rect();
+                        activityRoot.getWindowVisibleDisplayFrame(visibleFrame);
+
+                        int screenHeight = activityRoot.getRootView().getHeight();
+                        int visibleHeight = visibleFrame.height();
+                        int heightDiff = screenHeight - visibleHeight;
+
+                        // Threshold: >15% of screen height means keyboard is up
+                        boolean keyboardOpen = heightDiff > screenHeight * 0.15;
+
+                        int newState = keyboardOpen ? 1 : 0;
+                        if (newState != lastKeyboardState) {
+                            lastKeyboardState = newState;
+                            setNavVisible(!keyboardOpen);
+                        }
+                    }
+                });
+    }
+
+    private void setNavVisible(boolean visible) {
+        if (bottomNav == null) return;
+        int target = visible ? View.VISIBLE : View.GONE;
+        if (bottomNav.getVisibility() != target) {
+            bottomNav.setVisibility(target);
+        }
     }
 
     private void setupBackStackListener() {
@@ -99,9 +143,6 @@ public class MainActivity extends AppCompatActivity {
         return fragmentManager.getBackStackEntryAt(count - 1).getName();
     }
 
-    // ================================================================
-    // TAB SWITCHING
-    // ================================================================
     private void switchTab(String tag) {
         if (tag.equals(currentTag) && fragmentManager.findFragmentByTag(tag) != null) {
             selectNavItem(tag);
@@ -155,9 +196,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // ================================================================
-    // PUBLIC HELPERS
-    // ================================================================
     public void navigateToTab(String tag) {
         switchTab(tag);
     }
@@ -170,9 +208,6 @@ public class MainActivity extends AppCompatActivity {
         tx.commit();
     }
 
-    // ================================================================
-    // BACK PRESS
-    // ================================================================
     @Override
     public void onBackPressed() {
         if (fragmentManager.getBackStackEntryCount() > 0) {
