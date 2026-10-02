@@ -1,5 +1,6 @@
 package com.diodeit.spendtrack.fragments;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -27,26 +28,26 @@ import java.util.List;
 
 public class SettingsFragment extends Fragment {
 
+    // ★ Replace these with your real contact info
+    private static final String CONTACT_EMAIL = "mahadi.cse.21@gmail.com";
+    private static final String CONTACT_PHONE = "+8801780689788";
+    private static final String CONTACT_WHATSAPP = "+8801780689788"; // no + sign
+
     private MaterialSwitch switchDailyReminder;
-    private LinearLayout rowBackup, rowRestore, rowClear, rowPrivacy;
+    private LinearLayout rowBackup, rowRestore, rowClear, rowPrivacy, rowContact;
 
     private PreferenceManager prefManager;
     private DatabaseHelper dbHelper;
 
-    /** File picker for CSV restore. Registered in onCreate. */
     private ActivityResultLauncher<String[]> csvPicker;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Register the file picker. We accept any MIME type because some
-        // file managers report CSVs as "application/octet-stream" or "text/plain".
         csvPicker = registerForActivityResult(
                 new ActivityResultContracts.OpenDocument(),
-                uri -> {
-                    if (uri != null) performRestore(uri);
-                });
+                uri -> { if (uri != null) performRestore(uri); });
     }
 
     @Nullable
@@ -72,6 +73,7 @@ public class SettingsFragment extends Fragment {
         rowRestore          = view.findViewById(R.id.row_restore);
         rowClear            = view.findViewById(R.id.row_clear);
         rowPrivacy          = view.findViewById(R.id.row_privacy);
+        rowContact          = view.findViewById(R.id.row_contact);
     }
 
     private void loadSettings() {
@@ -86,10 +88,113 @@ public class SettingsFragment extends Fragment {
         rowRestore.setOnClickListener(v -> openCsvPicker());
         rowClear.setOnClickListener(v -> confirmClear());
         rowPrivacy.setOnClickListener(v -> showPrivacyPolicy());
+        rowContact.setOnClickListener(v -> showContactDialog());
     }
 
     // ================================================================
-    // BACKUP
+    // CONTACT DIALOG
+    // ================================================================
+    private void showContactDialog() {
+        String message =
+                "ডেভেলপার: মেহেদী হাসান\n\n" +
+                        "📧 ইমেইল: " + CONTACT_EMAIL + "\n" +
+                        "📞 মোবাইল: " + CONTACT_PHONE + "\n" +
+                        "💬 হোয়াটসঅ্যাপ: " + CONTACT_PHONE + "\n\n" +
+                        "আপনার মতামত, সমস্যা বা পরামর্শ জানাতে চাইলে " +
+                        "নিচের যেকোনো মাধ্যমে যোগাযোগ করুন।";
+
+        final String[] options = {
+                "📧  ইমেইল পাঠান",
+                "💬  হোয়াটসঅ্যাপে মেসেজ",
+                "📞  ফোন করুন",
+                "⭐  প্লে স্টোরে রিভিউ দিন"
+        };
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("যোগাযোগ করুন")
+                .setMessage(message)
+                .setItems(options, (dialog, which) -> {
+                    switch (which) {
+                        case 0: sendEmail();     break;
+                        case 1: openWhatsApp();  break;
+                        case 2: dialPhone();     break;
+                        case 3: openPlayStore(); break;
+                    }
+                })
+                .setNegativeButton("বন্ধ করুন", null)
+                .show();
+    }
+    /** Opens the email app with the support address pre-filled. */
+    private void sendEmail() {
+        Intent intent = new Intent(Intent.ACTION_SENDTO);
+        intent.setData(Uri.parse("mailto:" + CONTACT_EMAIL));
+        intent.putExtra(Intent.EXTRA_SUBJECT, "স্পেন্ডট্র্যাক — মতামত / সমস্যা");
+        intent.putExtra(Intent.EXTRA_TEXT,
+                "আপনার মতামত বা সমস্যা এখানে লিখুন:\n\n\n" +
+                        "---\n" +
+                        "অ্যাপ সংস্করণ: 1.0\n" +
+                        "ডিভাইস: " + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL + "\n" +
+                        "Android: " + android.os.Build.VERSION.RELEASE);
+        try {
+            startActivity(Intent.createChooser(intent, "ইমেইল পাঠান"));
+        } catch (Exception e) {
+            Toast.makeText(requireContext(),
+                    "কোনো ইমেইল অ্যাপ পাওয়া যায়নি। সরাসরি ইমেইল করুন: " + CONTACT_EMAIL,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** Opens WhatsApp with the support number. */
+    private void openWhatsApp() {
+        try {
+            String url = "https://wa.me/" + CONTACT_WHATSAPP +
+                    "?text=" + Uri.encode("স্পেন্ডট্র্যাক অ্যাপ সম্পর্কে:");
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(),
+                    "হোয়াটসঅ্যাপ ইনস্টল করা নেই। ফোন করুন: " + CONTACT_PHONE,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** Opens the phone dialer with the support number. */
+    private void dialPhone() {
+        Intent intent = new Intent(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse("tel:" + CONTACT_PHONE));
+        try {
+            startActivity(intent);
+        } catch (Exception e) {
+            Toast.makeText(requireContext(),
+                    "ফোন অ্যাপ পাওয়া যায়নি। ইমেইল করুন: " + CONTACT_EMAIL,
+                    Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /** Opens the Play Store listing so users can leave a review. */
+    private void openPlayStore() {
+        try {
+            // ★ Replace with your real package name
+            String packageName = requireContext().getPackageName();
+            Intent intent = new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("market://details?id=" + packageName));
+            startActivity(intent);
+        } catch (Exception e) {
+            // Fallback to web browser if Play Store app not installed
+            try {
+                String packageName = requireContext().getPackageName();
+                Intent intent = new Intent(Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/details?id=" + packageName));
+                startActivity(intent);
+            } catch (Exception e2) {
+                Toast.makeText(requireContext(),
+                        "প্লে স্টোর খোলা যায়নি", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    // ================================================================
+    // BACKUP / RESTORE / CLEAR / PRIVACY  (unchanged)
     // ================================================================
     private void exportBackup() {
         List<Expense> all = dbHelper.getAllExpenses();
@@ -104,23 +209,14 @@ public class SettingsFragment extends Fragment {
                 Toast.LENGTH_LONG).show();
     }
 
-    // ================================================================
-    // RESTORE
-    // ================================================================
     private void openCsvPicker() {
-        // Accept any MIME type because CSV files can be reported differently
-        // by different file managers.
         csvPicker.launch(new String[]{
-                "text/csv",
-                "text/comma-separated-values",
-                "application/csv",
-                "text/plain",
-                "*/*"
+                "text/csv", "text/comma-separated-values",
+                "application/csv", "text/plain", "*/*"
         });
     }
 
     private void performRestore(Uri uri) {
-        // Confirm before importing on top of existing data
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("ডেটা রিস্টোর")
                 .setMessage("আপনি কি নির্বাচিত CSV ফাইল থেকে সব লেনদেন ইমপোর্ট করতে চান?\n\n" +
@@ -132,11 +228,8 @@ public class SettingsFragment extends Fragment {
 
     private void doImport(Uri uri) {
         Toast.makeText(requireContext(), "ইমপোর্ট হচ্ছে...", Toast.LENGTH_SHORT).show();
-
-        // Run on a background thread to avoid blocking the UI
         new Thread(() -> {
             int imported = CsvImporter.importFromUri(requireContext(), uri, dbHelper);
-
             if (getActivity() == null) return;
             getActivity().runOnUiThread(() -> {
                 if (imported > 0) {
@@ -145,24 +238,20 @@ public class SettingsFragment extends Fragment {
                             Toast.LENGTH_LONG).show();
                 } else if (imported == 0) {
                     Toast.makeText(requireContext(),
-                            "ফাইলে কোনো লেনদেন পাওয়া যায়নি",
-                            Toast.LENGTH_LONG).show();
+                            "ফাইলে কোনো লেনদেন পাওয়া যায়নি", Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(requireContext(),
-                            "ইমপোর্ট ব্যর্থ হয়েছে",
-                            Toast.LENGTH_LONG).show();
+                            "ইমপোর্ট ব্যর্থ হয়েছে", Toast.LENGTH_LONG).show();
                 }
             });
         }).start();
     }
 
-    // ================================================================
-    // CLEAR DATA
-    // ================================================================
     private void confirmClear() {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("সব ডেটা মুছুন")
-                .setMessage("আপনি কি নিশ্চিতভাবে সব লেনদেন এবং বাজেট মুছে ফেলতে চান? এটি ফিরিয়ে আনা যাবে না।")
+                .setMessage("আপনি কি নিশ্চিতভাবে সব লেনদেন এবং বাজেট মুছে ফেলতে চান? " +
+                        "এটি ফিরিয়ে আনা যাবে না।")
                 .setPositiveButton("মুছে ফেলুন", (dialog, which) -> {
                     dbHelper.clearAllData();
                     Toast.makeText(requireContext(),
@@ -172,9 +261,6 @@ public class SettingsFragment extends Fragment {
                 .show();
     }
 
-    // ================================================================
-    // PRIVACY POLICY
-    // ================================================================
     private void showPrivacyPolicy() {
         String policy =
                 "স্পেন্ডট্র্যাক — গোপনীয়তা নীতি\n\n" +
@@ -186,7 +272,7 @@ public class SettingsFragment extends Fragment {
                         "৪. অ্যাপটি কোনো ক্যামেরা বা ইন্টারনেট পারমিশন চায় না।\n\n" +
                         "৫. 'সব ডেটা মুছুন' অপশন ব্যবহার করে যেকোনো সময় সব তথ্য " +
                         "স্থায়ীভাবে মুছে ফেলা যায়।\n\n" +
-                        "যদি আপনার কোনো প্রশ্ন থাকে, যোগাযোগ করুন: support@diodeit.com";
+                        "যোগাযোগ: " + CONTACT_EMAIL;
 
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("গোপনীয়তা নীতি")

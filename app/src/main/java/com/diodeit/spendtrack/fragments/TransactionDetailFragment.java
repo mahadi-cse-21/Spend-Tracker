@@ -107,7 +107,6 @@ public class TransactionDetailFragment extends Fragment {
         cgTags          = view.findViewById(R.id.cg_tags);
 
         btnEdit         = view.findViewById(R.id.btn_edit);
-        btnDownload     = view.findViewById(R.id.btn_download);
 
         androidx.appcompat.widget.Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
@@ -214,9 +213,6 @@ public class TransactionDetailFragment extends Fragment {
             ((MainActivity) requireActivity()).openDetailFragment(frag, "ADD_EDIT");
         });
 
-        btnDownload.setOnClickListener(v ->
-                Toast.makeText(requireContext(),
-                        "ভাউচার সংরক্ষিত হয়েছে", Toast.LENGTH_SHORT).show());
     }
 
     private void confirmDelete() {

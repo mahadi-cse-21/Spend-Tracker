@@ -463,18 +463,7 @@
                     app:icon="@drawable/ic_edit"
                     app:iconTint="@color/on_surface_variant" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_download"
-                    android:layout_width="0dp"
-                    android:layout_height="48dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:text="@string/download_share"
-                    android:textColor="@color/on_primary"
-                    app:backgroundTint="@color/primary"
-                    app:cornerRadius="24dp"
-                    app:icon="@drawable/ic_download"
-                    app:iconTint="@color/on_primary" />
+
             </LinearLayout>
 
         </LinearLayout>
