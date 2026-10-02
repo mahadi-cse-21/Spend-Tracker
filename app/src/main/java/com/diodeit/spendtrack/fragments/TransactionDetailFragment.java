@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -28,7 +29,9 @@ import com.diodeit.spendtrack.utils.BengaliNumberConverter;
 import com.diodeit.spendtrack.utils.CategoryUtils;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 public class TransactionDetailFragment extends Fragment {
@@ -149,30 +152,38 @@ public class TransactionDetailFragment extends Fragment {
             tvSectionTitle.setText(isIncome ? "আয়ের বিবরণ" : "খরচের বিবরণ");
         }
 
+        // ─── Items list with edit + delete ────────────────────────
         LinearLayout llItemsContainer = root.findViewById(R.id.ll_items_container);
         if (llItemsContainer != null) {
             llItemsContainer.removeAllViews();
             LayoutInflater inflater = LayoutInflater.from(requireContext());
 
-            if (expense.getItems() != null && !expense.getItems().isEmpty()) {
-                for (ExpenseItem item : expense.getItems()) {
-                    View row = inflater.inflate(R.layout.item_detail_expense_row,
-                            llItemsContainer, false);
-                    TextView tvN = row.findViewById(R.id.tv_item_name);
-                    TextView tvA = row.findViewById(R.id.tv_item_amount);
-                    tvN.setText(item.getName());
-                    tvA.setText("৳ " + bnConverter.toBengali(
-                            String.format(Locale.US, "%,.0f", item.getAmount())));
-                    llItemsContainer.addView(row);
-                }
-            } else if (expense.getNote() != null && !expense.getNote().isEmpty()) {
+            List<ExpenseItem> items = expense.getItems();
+            if (items == null || items.isEmpty()) {
+                items = new ArrayList<>();
+                items.add(new ExpenseItem(
+                        expense.getNote() != null ? expense.getNote() : "",
+                        expense.getAmount()));
+            }
+
+            for (int i = 0; i < items.size(); i++) {
+                final int index = i;
+                ExpenseItem item = items.get(i);
+
                 View row = inflater.inflate(R.layout.item_detail_expense_row,
                         llItemsContainer, false);
                 TextView tvN = row.findViewById(R.id.tv_item_name);
                 TextView tvA = row.findViewById(R.id.tv_item_amount);
-                tvN.setText(expense.getNote());
+                ImageView btnEditItem   = row.findViewById(R.id.btn_edit_item);
+                ImageView btnDeleteItem = row.findViewById(R.id.btn_delete_item);
+
+                tvN.setText(item.getName());
                 tvA.setText("৳ " + bnConverter.toBengali(
-                        String.format(Locale.US, "%,.0f", expense.getAmount())));
+                        String.format(Locale.US, "%,.0f", item.getAmount())));
+
+                btnEditItem.setOnClickListener(v -> showEditItemDialog(index));
+                btnDeleteItem.setOnClickListener(v -> confirmDeleteItem(index));
+
                 llItemsContainer.addView(row);
             }
         }
@@ -183,6 +194,7 @@ public class TransactionDetailFragment extends Fragment {
                     String.format(Locale.US, "%,.0f", expense.getAmount())));
         }
 
+        // Wallet / Vendor / Note / Tags
         if (expense.getWallet() != null && !expense.getWallet().isEmpty()) {
             llWalletRow.setVisibility(View.VISIBLE);
             tvWallet.setText(expense.getWallet());
@@ -213,8 +225,122 @@ public class TransactionDetailFragment extends Fragment {
             ((MainActivity) requireActivity()).openDetailFragment(frag, "ADD_EDIT");
         });
 
+  }
+
+    // ─── Edit a single item ───────────────────────────────────────
+    private void showEditItemDialog(int index) {
+        if (expense.getItems() == null
+                || index < 0
+                || index >= expense.getItems().size()) return;
+
+        ExpenseItem item = expense.getItems().get(index);
+
+        LinearLayout container = new LinearLayout(requireContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        int pad = (int) (16 * getResources().getDisplayMetrics().density);
+        container.setPadding(pad, pad, pad, 0);
+
+        EditText etNameD = new EditText(requireContext());
+        etNameD.setHint("আইটেমের নাম");
+        etNameD.setText(item.getName());
+        container.addView(etNameD);
+
+        EditText etAmountD = new EditText(requireContext());
+        etAmountD.setHint("পরিমাণ");
+        etAmountD.setInputType(android.text.InputType.TYPE_CLASS_NUMBER
+                | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        etAmountD.setText(String.format(Locale.US, "%.0f", item.getAmount()));
+        container.addView(etAmountD);
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("আইটেম এডিট করুন")
+                .setView(container)
+                .setPositiveButton("সংরক্ষণ", (d, w) -> {
+                    String newName = etNameD.getText().toString().trim();
+                    String amtStr = etAmountD.getText().toString().trim();
+                    if (newName.isEmpty() || amtStr.isEmpty()) {
+                        Toast.makeText(requireContext(),
+                                "নাম ও পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    double newAmount;
+                    try {
+                        newAmount = Double.parseDouble(bnConverter.toEnglish(amtStr));
+                    } catch (NumberFormatException ex) {
+                        Toast.makeText(requireContext(),
+                                "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    item.setName(newName);
+                    item.setAmount(newAmount);
+
+                    double total = 0;
+                    for (ExpenseItem e : expense.getItems()) total += e.getAmount();
+                    expense.setAmount(total);
+
+                    dbHelper.updateExpense(expense.getId(), expense);
+
+                    Toast.makeText(requireContext(),
+                            "আইটেম আপডেট হয়েছে", Toast.LENGTH_SHORT).show();
+
+                    refreshScreen();
+                })
+                .setNegativeButton("বাতিল", null)
+                .show();
     }
 
+    // ─── Delete a single item ─────────────────────────────────────
+    private void confirmDeleteItem(int index) {
+        if (expense.getItems() == null
+                || index < 0
+                || index >= expense.getItems().size()) return;
+
+        ExpenseItem item = expense.getItems().get(index);
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("আইটেম মুছুন")
+                .setMessage("\"" + item.getName() + "\" মুছে ফেলতে চান?")
+                .setPositiveButton("মুছে ফেলুন", (d, w) -> {
+                    expense.getItems().remove(index);
+
+                    if (expense.getItems().isEmpty()) {
+                        dbHelper.deleteExpense(expense.getId());
+                        Toast.makeText(requireContext(),
+                                "লেনদেন মুছে ফেলা হয়েছে", Toast.LENGTH_SHORT).show();
+                        requireActivity().onBackPressed();
+                        return;
+                    }
+
+                    double total = 0;
+                    for (ExpenseItem e : expense.getItems()) total += e.getAmount();
+                    expense.setAmount(total);
+
+                    dbHelper.updateExpense(expense.getId(), expense);
+
+                    Toast.makeText(requireContext(),
+                            "আইটেম মুছে ফেলা হয়েছে", Toast.LENGTH_SHORT).show();
+
+                    refreshScreen();
+                })
+                .setNegativeButton("বাতিল", null)
+                .show();
+    }
+
+    // ─── Reload the whole screen ──────────────────────────────────
+    private void refreshScreen() {
+        View root = getView();
+        if (root == null) return;
+        Expense refreshed = dbHelper.getExpense(expense.getId());
+        if (refreshed == null) {
+            requireActivity().onBackPressed();
+            return;
+        }
+        expense = refreshed;
+        loadData(root);
+    }
+
+    // ─── Delete the whole transaction ─────────────────────────────
     private void confirmDelete() {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("মুছে ফেলুন")

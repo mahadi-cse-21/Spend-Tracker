@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.tabs.TabLayout;
 
 import com.diodeit.spendtrack.MainActivity;
@@ -85,6 +87,10 @@ public class AddExpenseFragment extends Fragment {
         if (args != null && args.getLong("expense_id", -1) > 0) {
             editExpenseId = args.getLong("expense_id", -1);
             editingExpense = dbHelper.getExpense(editExpenseId);
+            if (editingExpense != null) {
+                selectedType = editingExpense.getType() != null
+                        ? editingExpense.getType() : "expense";
+            }
         }
 
         if (editExpenseId <= 0 && args != null) {
@@ -100,7 +106,7 @@ public class AddExpenseFragment extends Fragment {
         setupAddButton();
         setupSaveButton();
 
-        if (tabType != null && editExpenseId <= 0) {
+        if (tabType != null) {
             int tabIndex = selectedType.equals("income") ? 1 : 0;
             TabLayout.Tab tab = tabType.getTabAt(tabIndex);
             if (tab != null) tab.select();
@@ -275,16 +281,72 @@ public class AddExpenseFragment extends Fragment {
     }
 
     private void setupAddedList() {
-        addedAdapter = new AddedItemAdapter(requireContext(), addedItems, position -> {
-            if (position >= 0 && position < addedItems.size()) {
-                addedItems.remove(position);
-                addedAdapter.notifyItemRemoved(position);
-                addedAdapter.notifyItemRangeChanged(position, addedItems.size());
-                updateTotalAndVisibility();
-            }
-        });
+        addedAdapter = new AddedItemAdapter(
+                requireContext(),
+                addedItems,
+                position -> {
+                    if (position >= 0 && position < addedItems.size()) {
+                        addedItems.remove(position);
+                        addedAdapter.notifyItemRemoved(position);
+                        addedAdapter.notifyItemRangeChanged(position, addedItems.size());
+                        updateTotalAndVisibility();
+                    }
+                },
+                position -> showEditItemDialog(position)
+        );
         rvAddedItems.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvAddedItems.setAdapter(addedAdapter);
+    }
+
+    private void showEditItemDialog(int index) {
+        if (index < 0 || index >= addedItems.size()) return;
+        ExpenseItem item = addedItems.get(index);
+
+        LinearLayout container = new LinearLayout(requireContext());
+        container.setOrientation(LinearLayout.VERTICAL);
+        int pad = (int) (16 * getResources().getDisplayMetrics().density);
+        container.setPadding(pad, pad, pad, 0);
+
+        EditText etNameD = new EditText(requireContext());
+        etNameD.setHint("আইটেমের নাম");
+        etNameD.setText(item.getName());
+        container.addView(etNameD);
+
+        EditText etAmountD = new EditText(requireContext());
+        etAmountD.setHint("পরিমাণ");
+        etAmountD.setInputType(android.text.InputType.TYPE_CLASS_NUMBER
+                | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        etAmountD.setText(String.format(Locale.US, "%.0f", item.getAmount()));
+        container.addView(etAmountD);
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("আইটেম এডিট করুন")
+                .setView(container)
+                .setPositiveButton("সংরক্ষণ", (d, w) -> {
+                    String newName = etNameD.getText().toString().trim();
+                    String amtStr = etAmountD.getText().toString().trim();
+                    if (newName.isEmpty() || amtStr.isEmpty()) {
+                        Toast.makeText(requireContext(),
+                                "নাম ও পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    double newAmount;
+                    try {
+                        newAmount = Double.parseDouble(bn.toEnglish(amtStr));
+                    } catch (NumberFormatException ex) {
+                        Toast.makeText(requireContext(),
+                                "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    item.setName(newName);
+                    item.setAmount(newAmount);
+                    addedAdapter.notifyItemChanged(index);
+                    updateTotalAndVisibility();
+                    Toast.makeText(requireContext(),
+                            "আইটেম আপডেট হয়েছে", Toast.LENGTH_SHORT).show();
+                })
+                .setNegativeButton("বাতিল", null)
+                .show();
     }
 
     private void setupDatePicker() {
@@ -432,7 +494,6 @@ public class AddExpenseFragment extends Fragment {
                             : addedItems.size() + "টি খরচ সংরক্ষিত হয়েছে";
                     Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
 
-                    // Return to Home tab
                     if (getActivity() instanceof MainActivity) {
                         ((MainActivity) requireActivity()).navigateToTab("HOME");
                     }

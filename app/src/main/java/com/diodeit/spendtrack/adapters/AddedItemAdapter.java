@@ -20,19 +20,28 @@ import java.util.Locale;
 public class AddedItemAdapter extends RecyclerView.Adapter<AddedItemAdapter.VH> {
 
     public interface OnItemRemove { void onRemove(int position); }
+    public interface OnItemEdit   { void onEdit(int position); }
 
     private final Context ctx;
     private final List<ExpenseItem> items;
     private final OnItemRemove removeListener;
+    private final OnItemEdit editListener;
     private final BengaliNumberConverter bn = new BengaliNumberConverter();
 
-    public AddedItemAdapter(Context ctx, List<ExpenseItem> items, OnItemRemove listener) {
-        this.ctx = ctx;
-        this.items = items;
-        this.removeListener = listener;
+    public AddedItemAdapter(Context ctx, List<ExpenseItem> items, OnItemRemove removeListener) {
+        this(ctx, items, removeListener, null);
     }
 
-    @NonNull @Override
+    public AddedItemAdapter(Context ctx, List<ExpenseItem> items,
+                            OnItemRemove removeListener, OnItemEdit editListener) {
+        this.ctx = ctx;
+        this.items = items;
+        this.removeListener = removeListener;
+        this.editListener = editListener;
+    }
+
+    @NonNull
+    @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(ctx)
                 .inflate(R.layout.item_added_category, parent, false);
@@ -46,7 +55,10 @@ public class AddedItemAdapter extends RecyclerView.Adapter<AddedItemAdapter.VH> 
         h.tvAmount.setText("৳ " + bn.toBengali(
                 String.format(Locale.US, "%,.0f", item.getAmount())));
 
-        h.btnRemove.setOnClickListener(v -> {
+        h.btnEdit.setOnClickListener(v -> {
+            if (editListener != null) editListener.onEdit(h.getAdapterPosition());
+        });
+        h.btnDelete.setOnClickListener(v -> {
             if (removeListener != null) removeListener.onRemove(h.getAdapterPosition());
         });
     }
@@ -55,7 +67,7 @@ public class AddedItemAdapter extends RecyclerView.Adapter<AddedItemAdapter.VH> 
     public int getItemCount() { return items.size(); }
 
     static class VH extends RecyclerView.ViewHolder {
-        ImageView ivIcon, btnRemove;
+        ImageView ivIcon, btnEdit, btnDelete;
         TextView tvName, tvAmount;
 
         VH(@NonNull View v) {
@@ -63,7 +75,8 @@ public class AddedItemAdapter extends RecyclerView.Adapter<AddedItemAdapter.VH> 
             ivIcon    = v.findViewById(R.id.iv_item_icon);
             tvName    = v.findViewById(R.id.tv_item_name);
             tvAmount  = v.findViewById(R.id.tv_item_amount);
-            btnRemove = v.findViewById(R.id.btn_remove_item);
+            btnEdit   = v.findViewById(R.id.btn_edit_item);
+            btnDelete = v.findViewById(R.id.btn_delete_item);
         }
     }
 }
