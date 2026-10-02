@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">স্পেন্ডট্র্যাক</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">হোম</string>
+    <string name="nav_history">ইতিহাস</string>
+    <string name="nav_add">যুক্ত করুন</string>
+    <string name="nav_analytics">পরিসংখ্যান</string>
+    <string name="nav_settings">সেটিংস</string>
+    <string name="nav_budget">বাজেট</string>
+    <string name="nav_scanner">স্ক্যানার</string>
+
+    <!-- Common -->
+    <string name="offline_mode">অফলাইন মোড</string>
+    <string name="offline_saved">অফলাইন সেভ</string>
+    <string name="save">সংরক্ষণ</string>
+    <string name="cancel">বাতিল</string>
+    <string name="confirm">নিশ্চিত করুন</string>
+    <string name="back">ফিরে যান</string>
+    <string name="close">বন্ধ করুন</string>
+    <string name="edit">এডিট করুন</string>
+    <string name="delete">মুছে ফেলুন</string>
+    <string name="share">শেয়ার করুন</string>
+    <string name="search">অনুসন্ধান</string>
+    <string name="filter">ফিল্টার</string>
+    <string name="reset">রিসেট</string>
+    <string name="dot">●</string>
+
+    <!-- Home Screen -->
+    <string name="total_month_expense">চলতি মাসের মোট খরচ</string>
+    <string name="budget_goal">বাজেট লক্ষ্য: ৳%1$s</string>
+    <string name="today_expense_label">● আজকের খরচ</string>
+    <string name="daily_average_label">● দৈনিক গড়</string>
+    <string name="remaining_budget_label">● অবশিষ্ট</string>
+    <string name="quick_actions">দ্রুত অ্যাকশন</string>
+    <string name="quick_add_expense">দ্রুত খরচ যোগ</string>
+    <string name="scan_receipt">রিসিপ্ট স্ক্যান</string>
+    <string name="view_budget">বাজেট দেখুন</string>
+    <string name="transfer">স্থানান্তর</string>
+    <string name="today_expenses">আজকের খরচের তালিকা</string>
+    <string name="recent_transactions">সাম্প্রতিক লেনদেন</string>
+    <string name="view_all">সব দেখুন</string>
+    <string name="add_new_expense">নতুন খরচ যোগ করুন</string>
+    <string name="entries">%1$sটি এন্ট্রি</string>
+    <string name="offline_secure">১০০% অফলাইন • ডাটা সুরক্ষিত ডিভাইসে</string>
+    <string name="safe">নিরাপদ</string>
+    <string name="normal_pace">স্বাভাবিক গতি</string>
+    <string name="over_pace">সীমার উপরে</string>
+    <string name="budget_used">বাজেটের %1$s%% ব্যবহৃত</string>
+    <string name="spent_label">খরচ: ৳%1$s</string>
+
+    <!-- Add Expense -->
+    <string name="add_expense">নতুন খরচ যোগ করুন</string>
+    <string name="new_entry">নতুন এন্ট্রি তৈরি</string>
+    <string name="expense_amount">খরচের পরিমাণ দিন</string>
+    <string name="calculator_active">সরাসরি হিসাব সক্রিয়</string>
+    <string name="calculation_done">গণনা সম্পন্ন</string>
+    <string name="calc_adding">%1$s + যোগ হচ্ছে...</string>
+    <string name="calc_subtracting">%1$s - বিয়োগ হচ্ছে...</string>
+    <string name="select_category">ক্যাটাগরি বা খাত নির্বাচন করুন</string>
+    <string name="category_selected">%1$s নির্বাচিত</string>
+    <string name="payment_method">পেমেন্ট মাধ্যম</string>
+    <string name="date_time">তারিখ ও সময়</string>
+    <string name="change">পরিবর্তন</string>
+    <string name="notes">নোট / বিবরণ</string>
+    <string name="notes_hint">খরচের বিস্তারিত বিবরণ লিখুন...</string>
+    <string name="receipt_image">রসিদ বা বিলের ছবি</string>
+    <string name="offline_protected">অফলাইনে সুরক্ষিত থাকবে</string>
+    <string name="attach">যুক্ত করুন</string>
+    <string name="recurring_expense">পুনরাবৃত্ত খরচ</string>
+    <string name="enable_monthly">মাসিক পুনরাবৃত্তি চালু করুন</string>
+    <string name="save_expense">খরচ সংরক্ষণ করুন</string>
+    <string name="expense_saved">খরচ সফলভাবে সংরক্ষিত হয়েছে!</string>
+    <string name="invalid_amount">সঠিক পরিমাণ দিন</string>
+    <string name="save_failed">সংরক্ষণ ব্যর্থ হয়েছে</string>
+
+    <!-- Categories -->
+    <string name="cat_food">খাবার ও রেস্তোরাঁ</string>
+    <string name="cat_grocery">বাজার ও মুদি</string>
+    <string name="cat_transport">যাতায়াত ও ভাড়া</string>
+    <string name="cat_rent">বাড়ি ভাড়া ও বিল</string>
+    <string name="cat_health">স্বাস্থ্য ও ওষুধ</string>
+    <string name="cat_shopping">বিনোদন ও শপিং</string>
+    <string name="cat_education">শিক্ষা ও বই</string>
+    <string name="cat_other">অন্যান্য</string>
+
+    <string name="cat_food_short">খাবার</string>
+    <string name="cat_grocery_short">বাজার</string>
+    <string name="cat_transport_short">যাতায়াত</string>
+    <string name="cat_rent_short">ভাড়া ও বিল</string>
+    <string name="cat_health_short">স্বাস্থ্য</string>
+    <string name="cat_shopping_short">শপিং</string>
+    <string name="cat_education_short">শিক্ষা</string>
+    <string name="cat_other_short">অন্যান্য</string>
+
+    <!-- Payment Methods -->
+    <string name="pay_cash">ক্যাশ / নগদ</string>
+    <string name="pay_bkash">বিকাশ (bKash)</string>
+    <string name="pay_nagad">নগদ (Nagad)</string>
+    <string name="pay_card">ডেবিট / ক্রেডিট কার্ড</string>
+    <string name="pay_bank">ব্যাংক ট্রান্সফার</string>
+    <string name="pay_rocket">রকেট (Rocket)</string>
+    <string name="pay_cash_short">ক্যাশ</string>
+    <string name="pay_bkash_short">বিকাশ</string>
+    <string name="pay_nagad_short">নগদ</string>
+    <string name="pay_card_short">কার্ড</string>
+    <string name="pay_bank_short">ব্যাংক</string>
+    <string name="pay_rocket_short">রকেট</string>
+
+    <!-- Budget -->
+    <string name="budget_setup">বাজেট নির্ধারণ ও সীমা</string>
+    <string name="budget_subtitle">মাসিক পরিকল্পনা ও সতর্কবার্তা</string>
+    <string name="active_plan">সক্রিয় পরিকল্পনা</string>
+    <string name="total_budget_limit">চলতি মাসের মোট বাজেট সীমা</string>
+    <string name="maximum">সর্বোচ্চ</string>
+    <string name="budget_allocation_progress">বাজেট বরাদ্দ অগ্রগতি</string>
+    <string name="allocated">বরাদ্ধকৃত</string>
+    <string name="allocated_percent">%1$s%% বরাদ্ধকৃত</string>
+    <string name="remaining_open">অবশিষ্ট উন্মুক্ত</string>
+    <string name="category_budget_limit">খাতভিত্তিক বরাদ্দ ও সীমা</string>
+    <string name="spending_pressure">খরচের চাপ অনুপাত</string>
+    <string name="current_expense_label">বর্তমান খরচ: ৳ %1$s</string>
+    <string name="budget_label">বাজেট: ৳ %1$s</string>
+    <string name="alert">সতর্কতা</string>
+    <string name="near_limit">সীমার কাছাকাছি</string>
+    <string name="limit_exceeded">সীমা লঙ্ঘন!</string>
+    <string name="fixed_cost">স্থির খরচ</string>
+    <string name="under_control">নিয়ন্ত্রণে আছে</string>
+    <string name="safe_savings">নিরাপদ সঞ্চয়</string>
+    <string name="add_category_budget">নতুন খাতের বাজেট যোগ করুন</string>
+    <string name="save_budget">বাজেট সংরক্ষণ করুন</string>
+    <string name="budget_saved">বাজেট সেটিংস সফলভাবে সংরক্ষিত হয়েছে!</string>
+    <string name="local_storage_note">সমস্ত পরিবর্তন ডিভাইসের লোকাল মেমরিতে সুরক্ষিত থাকবে</string>
+    <string name="warning_offline_safety">সতর্কবার্তা ও অফলাইন সুরক্ষা</string>
+    <string name="limit_violation_alert">সীমা লঙ্ঘন ভাইব্রেশন ও অ্যালার্ট</string>
+    <string name="instant_vibration">বাজেট অতিক্রম করলে তাৎক্ষণিক কম্পন</string>
+    <string name="daily_safe_spend">দৈনিক নিরাপদ খরচের সীমা (Safe Spend)</string>
+    <string name="daily_safe_calc">দিনপ্রতি সর্বোচ্চ নিরাপদ ব্যয়ের হিসাব</string>
+    <string name="savings_tip">পরামর্শ: সঞ্চয়ের সুযোগ</string>
+    <string name="savings_suggestion">মুদি খরচে সামান্য সংযম রাখলে মাসে আরও বেশি সঞ্চয় সম্ভব।</string>
+    <string name="add_new_category">নতুন বাজেট খাত যোগ</string>
+    <string name="category_name">খাতের নাম</string>
+    <string name="category_name_hint">যেমন: স্বাস্থ্য ও চিকিৎসা</string>
+    <string name="allocation_amount">বরাদ্দের পরিমাণ (টাকা)</string>
+    <string name="amount_hint">২,৫০০</string>
+    <string name="spent_percent">%1$s%% ব্যায়িত</string>
+
+    <!-- History -->
+    <string name="monthly_history">মাসিক খরচের ইতিহাস</string>
+    <string name="total_expense">মোট খরচ</string>
+    <string name="total_transactions">মোট লেনদেন</string>
+    <string name="search_hint">খরচের নাম বা ক্যাটাগরি খুঁজুন...</string>
+    <string name="clear_search">অনুসন্ধান মুছুন</string>
+    <string name="all_categories">সবগুলো</string>
+    <string name="today">আজ</string>
+    <string name="yesterday">গতকাল</string>
+    <string name="total">মোট:</string>
+    <string name="success">সফল</string>
+    <string name="cashback">ক্যাশব্যাক</string>
+    <string name="receipt_collected">রসিদ সংগৃহীত</string>
+    <string name="bill_paid">বিল পরিশোধিত</string>
+    <string name="no_results">কোন খরচের তথ্য পাওয়া যায়নি</string>
+    <string name="no_results_desc">অন্য কোনো নাম, ক্যাটাগরি বা ফিল্টার দিয়ে আবার অনুসন্ধান করে দেখুন।</string>
+    <string name="view_all_expenses">সব খরচ দেখুন</string>
+    <string name="export">এক্সপোর্ট</string>
+    <string name="export_report">খরচের বিবরণী ডাউনলোড</string>
+    <string name="export_desc">যাবতীয় হিসাব ফাইল আকারে সংরক্ষণ করুন</string>
+    <string name="pdf_format">PDF ফরম্যাট</string>
+    <string name="pdf_desc">প্রিন্ট ও শেয়ার উপযোগী</string>
+    <string name="csv_format">Excel / CSV</string>
+    <string name="csv_desc">এক্সেল বা স্প্রেডশিট</string>
+    <string name="export_success">ফাইলটি সফলভাবে তৈরি করা হয়েছে!</string>
+    <string name="prev_month">আগের মাস</string>
+    <string name="next_month">পরের মাস</string>
+    <string name="filter_active">ফিল্টার সক্রিয় রয়েছে</string>
+    <string name="transactions_found">%1$sটি লেনদেন পাওয়া গেছে</string>
+    <string name="apply_filter">ফিল্টার প্রয়োগ করুন</string>
+
+    <!-- Analytics -->
+    <string name="analytics">পরিসংখ্যান</string>
+    <string name="weekly">সাপ্তাহিক</string>
+    <string name="monthly">মাসিক</string>
+    <string name="yearly">বাৎসরিক</string>
+    <string name="month_expense_title">এই মাসের মোট ব্যয়</string>
+    <string name="budget_amount">নির্ধারিত মোট বাজেট: ৳%1$s</string>
+    <string name="budget_amount_label">নির্ধারিত মোট বাজেট: ৳%1$s</string>
+    <string name="used_percent_label">%1$s%% ব্যবহৃত</string>
+    <string name="remaining_fund_label">অবশিষ্ট তহবিল: ৳%1$s</string>
+    <string name="days_left_label">আর %1$s দিন বাকি</string>
+    <string name="category_breakdown">খাতভিত্তিক ব্যয় বিভাজন</string>
+    <string name="categories_count">%1$sটি খাত</string>
+    <string name="highest_expense">সর্বাধিক ব্যয়</string>
+    <string name="savings_insight">সাশ্রয়ী পরামর্শ ও পর্যবেক্ষণ</string>
+    <string name="smart_tips">স্মার্ট টিপস</string>
+    <string name="insight_text">নিয়মিত খরচ পর্যবেক্ষণ করলে মাসের শেষে সাশ্রয় করা সম্ভব!</string>
+    <string name="budget_health">বাজেট স্বাস্থ্য ও সতর্কবার্তা</string>
+    <string name="monthly_limit">মাসিক সীমা</string>
+    <string name="normal">স্বাভাবিক</string>
+    <string name="within_limit">সীমার মধ্যে চলমান</string>
+    <string name="remaining">অবশিষ্ট:</string>
+    <string name="under_control_status">নিয়ন্ত্রণে আছে</string>
+    <string name="daily_weekly_pace">দৈনিক ও সাপ্তাহিক খরচের গতি</string>
+    <string name="week_1">১ম সপ্তাহ</string>
+    <string name="week_2">২য় সপ্তাহ</string>
+    <string name="week_3">৩য় সপ্তাহ</string>
+    <string name="week_4">৪র্থ সপ্তাহ</string>
+    <string name="highest">সর্বোচ্চ</string>
+    <string name="ongoing">চলমান</string>
+    <string name="avg_daily_label">গড় দৈনিক খরচ: ৳%1$s</string>
+    <string name="max_expense_label">সর্বাধিক খরচ: %1$s সপ্তাহে</string>
+    <string name="report_backup">রিপোর্ট ও ডেটা ব্যাকআপ</string>
+    <string name="offline_synced">অফলাইন সিঙ্কড</string>
+    <string name="pdf_download">পিডিএফ ডাউনলোড</string>
+    <string name="bengali_report">বাংলা হিসাব বিবরণী</string>
+    <string name="offline_backup">অফলাইন ব্যাকআপ</string>
+    <string name="csv_backup">CSV ও ব্যাকআপ ফাইল</string>
+    <string name="report_ready">রিপোর্ট প্রস্তুত হচ্ছে...</string>
+    <string name="pdf_ready">বাংলা মাসিক আর্থিক পিডিএফ রিপোর্ট ডাউনলোড সম্পন্ন হয়েছে।</string>
+    <string name="backup_ready">ডিভাইসে অফলাইন ব্যাকআপ ফাইল সংরক্ষিত হয়েছে।</string>
+    <string name="selected">নির্বাচিত:</string>
+    <string name="total_expense_label">মোট খরচ:</string>
+    <string name="warning_budget_end">সতর্কবার্তা: এই খাতের বাজেট প্রায় শেষ!</string>
+    <string name="budget_health_exceeded">সীমা লঙ্ঘন!</string>
+    <string name="budget_health_near">সীমার কাছাকাছি</string>
+    <string name="total_budget_taka">/ %1$s টাকা</string>
+    <string name="percent_label">%1$s%%</string>
+    <string name="spent_vs_budget">৳ %1$s / ৳ %2$s</string>
+    <string name="remaining_label">অবশিষ্ট: ৳ %1$s</string>
+
+    <!-- Transaction Detail -->
+    <string name="transaction_detail">লেনদেনের বিস্তারিত ও রসিদ</string>
+    <string name="success_offline_saved">সফল • অফলাইন সংরক্ষিত</string>
+    <string name="receipt_id">রসিদ আইডি</string>
+    <string name="sync_ready">সিঙ্ক প্রস্তুত</string>
+    <string name="payment_account">পেমেন্ট ও হিসাব বিবরণ</string>
+    <string name="personal_expense">ব্যক্তিগত খরচ</string>
+    <string name="payment_method_label">পেমেন্ট মাধ্যম</string>
+    <string name="cash_taka">ক্যাশ টাকা</string>
+    <string name="wallet_account">ওয়ালেট/হিসাব</string>
+    <string name="daily_pocket_money">দৈনিক পকেট মানি</string>
+    <string name="vendor_location">দোকান / স্থান</string>
+    <string name="note_comment">নোট ও মন্তব্য</string>
+    <string name="tags">ট্যাগসমূহ</string>
+    <string name="receipt_attachment">সংযুক্ত রসিদের ছবি</string>
+    <string name="file_attached">১টি ফাইল যুক্ত</string>
+    <string name="ocr_scanned_amount">ওসিআর স্ক্যানকৃত মোট: ৳%1$s</string>
+    <string name="match_percent">১০০% মিল</string>
+    <string name="total_payable">সর্বমোট প্রদেয়:</string>
+    <string name="camera_captured">ক্যামেরা দিয়ে ক্যাপচারকৃত</string>
+    <string name="zoom_in">বড় করে দেখুন</string>
+    <string name="view_fullscreen">রসিদ পূর্ণ স্ক্রিন দেখুন</string>
+    <string name="replace_receipt">রসিদ পরিবর্তন</string>
+    <string name="edit_expense">খরচ এডিট করুন</string>
+    <string name="download_share">ভাউচার ডাউনলোড</string>
+    <string name="voucher_created">ভাউচার সফলভাবে তৈরি হয়েছে!</string>
+    <string name="receipt_enlarging">রসিদটি বড় করে প্রদর্শিত হচ্ছে</string>
+    <string name="receipt_loading">রসিদের পূর্ণরূপ লোড হচ্ছে</string>
+    <string name="camera_gallery_open">ক্যামেরা অথবা গ্যালারি ওপেন করা হচ্ছে...</string>
+    <string name="voucher_saved">ভাউচার ইমেজ ডিভাইসে সেভ হয়েছে!</string>
+    <string name="delete_confirm">আপনি কি এই লেনদেনটি মুছে ফেলতে চান?</string>
+    <string name="transaction_deleted">লেনদেন মুছে ফেলা হয়েছে</string>
+    <string name="no_transaction_found">লেনদেন পাওয়া যায়নি</string>
+    <string name="edit_mode_soon">এডিট মোড শীঘ্রই আসছে</string>
+    <string name="file_count">%1$sটি ফাইল</string>
+
+    <!-- Filter -->
+    <string name="filter_search">ফিল্টার ও অনুসন্ধান</string>
+    <string name="time_range">সময়সীমা</string>
+    <string name="all_time">সব সময়</string>
+    <string name="this_week">এই সপ্তাহ</string>
+    <string name="last_month">গত মাস</string>
+    <string name="custom_range">কাস্টম রেঞ্জ</string>
+    <string name="from_date">হতে</string>
+    <string name="to_date">পর্যন্ত</string>
+    <string name="category_or_sector">ক্যাটাগরি বা খাত</string>
+    <string name="selected_of_total_count">৮টির মধ্যে %1$sটি বাছাইকৃত</string>
+    <string name="all_categories_full">সব খাত</string>
+    <string name="amount_range">টাকার পরিমাণ সীমা</string>
+    <string name="min_amount">সর্বনিম্ন</string>
+    <string name="max_amount">সর্বোচ্চ</string>
+    <string name="under_500">৳ ৫০০ এর নিচে</string>
+    <string name="between_500_2000">৳ ৫০০ - ৳ ২,০০০</string>
+    <string name="over_2000">৳ ২,০০০+</string>
+    <string name="only_with_receipt">শুধু রসিদযুক্ত লেনদেন</string>
+    <string name="receipt_desc">ক্যামেরা বা আপলোডকৃত রসিদ আছে এমন ব্যয়</string>
+
+    <!-- Receipt Scanner -->
+    <string name="receipt_scanner">রসিদ স্ক্যানার</string>
+    <string name="flash_light">ফ্ল্যাশ লাইট</string>
+    <string name="auto_detect_on">স্বয়ংক্রিয় ফ্রেম: সক্রিয়</string>
+    <string name="auto_detect_off">স্বয়ংক্রিয় ফ্রেম: বন্ধ</string>
+    <string name="offline_ai">অফলাইন AI</string>
+    <string name="vendor">প্রতিষ্ঠান</string>
+    <string name="confirmed_percent">৯৮% নিশ্চিত</string>
+    <string name="total_expense_scanner">মোট খরচ</string>
+    <string name="scanning">রসিদ স্ক্যান হচ্ছে... অফলাইন OCR সক্রিয়</string>
+    <string name="scan_instruction">রসিদটি ফ্রেমের মধ্যে রাখুন এবং স্পষ্ট আলোতে ছবি তুলুন</string>
+    <string name="detected">শনাক্ত করা হয়েছে</string>
+    <string name="grocery_expense">বাজার খরচ</string>
+    <string name="flash_on">ফ্ল্যাশ অন</string>
+    <string name="flash_off">ফ্ল্যাশ অফ</string>
+    <string name="scanning_receipt">রসিদ স্ক্যান হচ্ছে...</string>
+    <string name="opening_gallery">গ্যালারি খোলা হচ্ছে...</string>
+    <string name="gallery">গ্যালারি</string>
+    <string name="manual_entry">হাতে লিখে খরচ দিন</string>
+    <string name="scan_result_placeholder">৳ %1$s • %2$s</string>
+
+    <!-- Settings -->
+    <string name="settings">সেটিিংস</string>
+    <string name="app_preferences">অ্যাপ সেটিংস</string>
+    <string name="language">ভাষা</string>
+    <string name="bengali">বাংলা</string>
+    <string name="english">English</string>
+    <string name="currency">মুদ্রা</string>
+    <string name="bdt_taka">BDT (৳)</string>
+    <string name="notifications">নোটিফিকেশন</string>
+    <string name="daily_reminder">দৈনিক রিমাইন্ডার</string>
+    <string name="budget_alerts">বাজেট সতর্কতা</string>
+    <string name="data_management">ডেটা ম্যানেজমেন্ট</string>
+    <string name="backup_data">ডেটা ব্যাকআপ</string>
+    <string name="restore_data">ডেটা রিস্টোর</string>
+    <string name="clear_data">সব ডেটা মুছুন</string>
+    <string name="about">অ্যাপ সম্পর্কে</string>
+    <string name="version">সংস্করণ</string>
+    <string name="privacy_policy">গোপনীয়তা নীতি</string>
+    <string name="backup_completed">ডেটা ব্যাকআপ সম্পন্ন</string>
+    <string name="data_cleared">ডেটা মুছে ফেলা হয়েছে</string>
+    <string name="clear_data_confirm_title">সব ডেটা মুছুন</string>
+    <string name="clear_data_confirm_msg">আপনি কি নিশ্চিত? এই কাজটি ফিরিয়ে আনা যাবে না।</string>
+    <string name="restore_ready">ডেটা রিস্টোর প্রস্তুত</string>
+
+    <!-- Content Descriptions -->
+    <string name="cd_app_icon">SpendTrack আইকন</string>
+    <string name="cd_offline">অফলাইন</string>
+    <string name="cd_filter_search">ফিল্টার ও অনুসন্ধান</string>
+    <string name="cd_profile">প্রোফাইল</string>
+    <string name="cd_back">ফিরে যান</string>
+    <string name="cd_info">সহায়িকা ও তথ্য</string>
+    <string name="cd_add_expense">নতুন খরচ যোগ করুন</string>
+    <string name="cd_decrease">বাজেট কমান</string>
+    <string name="cd_increase">বাজেট বাড়ান</string>
+    <string name="cd_share">শেয়ার করুন</string>
+    <string name="cd_delete">মুছে ফেলুন</string>
+    <string name="cd_flash">ফ্ল্যাশ লাইট</string>
+    <string name="cd_capture">ছবি তুলুন</string>
+    <string name="cd_month_filter">ক্যালেন্ডার ও ফিল্টার</string>
+
+
+
+    <string name="select_date">তারিখ নির্বাচন করুন</string>
+
+
+
+
+
+
+</resources>

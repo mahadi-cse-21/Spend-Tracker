@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="space_xs">4dp</dimen>
+    <dimen name="space_sm">8dp</dimen>
+    <dimen name="space_md">16dp</dimen>
+    <dimen name="space_lg">24dp</dimen>
+    <dimen name="space_xl">32dp</dimen>
+
+    <dimen name="margin">16dp</dimen>
+    <dimen name="margin_tablet">32dp</dimen>
+    <dimen name="margin_desktop">48dp</dimen>
+
+    <dimen name="corner_sm">8dp</dimen>
+    <dimen name="corner_md">12dp</dimen>
+    <dimen name="corner_lg">16dp</dimen>
+    <dimen name="corner_xl">24dp</dimen>
+    <dimen name="corner_full">9999dp</dimen>
+
+    <dimen name="elevation_sm">1dp</dimen>
+    <dimen name="elevation_md">2dp</dimen>
+    <dimen name="elevation_lg">4dp</dimen>
+
+    <dimen name="icon_sm">16dp</dimen>
+    <dimen name="icon_md">20dp</dimen>
+    <dimen name="icon_lg">24dp</dimen>
+    <dimen name="icon_xl">32dp</dimen>
+
+    <dimen name="touch_target">48dp</dimen>
+    <dimen name="bottom_nav_height">64dp</dimen>
+    <dimen name="toolbar_height">64dp</dimen>
+</resources>

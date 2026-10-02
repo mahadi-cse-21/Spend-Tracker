@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.SpendTrack" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/primary_fixed_dim</item>
+        <item name="colorOnPrimary">@color/on_primary_fixed</item>
+        <item name="colorSurface">@color/inverse_surface</item>
+        <item name="colorOnSurface">@color/inverse_on_surface</item>
+    </style>
+</resources>
