@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_ADD       = "ADD";
     private static final String TAG_ANALYTICS = "ANALYTICS";
     private static final String TAG_SETTINGS  = "SETTINGS";
+    private static final String TAG_LOANS     = "LOANS";
 
     private BottomNavigationView bottomNav;
     private FragmentManager fragmentManager;
@@ -46,8 +47,8 @@ public class MainActivity extends AppCompatActivity {
             showFragment(TAG_HOME, false);
             selectNavItem(TAG_HOME);
         } else {
-            // Restore after rotation / process death
             currentTag = readTopTag();
+            if (currentTag == null) currentTag = TAG_HOME;
             selectNavItem(currentTag);
         }
     }
@@ -79,10 +80,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Listens for back-stack pops (back press or popBackStack calls) and
-     * updates the bottom nav highlight to match the currently visible fragment.
-     */
     private void setupBackStackListener() {
         fragmentManager.addOnBackStackChangedListener(() -> {
             String topTag = readTopTag();
@@ -90,14 +87,12 @@ public class MainActivity extends AppCompatActivity {
                 currentTag = topTag;
                 selectNavItem(currentTag);
             } else {
-                // Stack is empty → we're on the initial Home fragment
                 currentTag = TAG_HOME;
                 selectNavItem(TAG_HOME);
             }
         });
     }
 
-    /** Reads the tag of the top back-stack entry, or null if the stack is empty. */
     private String readTopTag() {
         int count = fragmentManager.getBackStackEntryCount();
         if (count == 0) return null;
@@ -113,8 +108,6 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         showFragment(tag, true);
-        // Nav item is synced by the back-stack listener; this call makes the
-        // highlight immediate on the same frame as the tap.
         selectNavItem(tag);
     }
 
@@ -126,7 +119,7 @@ public class MainActivity extends AppCompatActivity {
         tx.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
         tx.replace(R.id.fragment_container, fragment, tag);
         if (addToBackStack) {
-            tx.addToBackStack(tag);       // ← tag used as the entry name
+            tx.addToBackStack(tag);
         }
         tx.commit();
         currentTag = tag;
@@ -184,8 +177,6 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (fragmentManager.getBackStackEntryCount() > 0) {
             fragmentManager.popBackStack();
-            // The back-stack listener updates the nav highlight automatically.
-            // No manual nav item sync needed.
         } else {
             super.onBackPressed();
         }

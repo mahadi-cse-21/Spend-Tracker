@@ -2,14 +2,14 @@
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:paddingBottom="80dp">
+    android:layout_height="match_parent">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="16dp"
+        android:paddingBottom="24dp"
         android:clipToPadding="false">
 
         <!-- Offline Privacy Pill -->
@@ -184,7 +184,6 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- Metric Triad -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -270,7 +269,7 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <!-- Quick Actions Grid -->
+        <!-- Quick Actions -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -288,7 +287,6 @@
             android:columnCount="4"
             android:rowCount="1">
 
-            <!-- 1. খরচ যোগ -->
             <LinearLayout
                 android:id="@+id/btn_add_expense"
                 android:layout_width="0dp"
@@ -321,7 +319,6 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- 2. আয় যোগ -->
             <LinearLayout
                 android:id="@+id/btn_add_income"
                 android:layout_width="0dp"
@@ -354,7 +351,6 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- 3. পরিসংখ্যান -->
             <LinearLayout
                 android:id="@+id/btn_view_analytics"
                 android:layout_width="0dp"
@@ -387,7 +383,6 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- 4. সব লেনদেন -->
             <LinearLayout
                 android:id="@+id/btn_view_history"
                 android:layout_width="0dp"
@@ -421,7 +416,23 @@
             </LinearLayout>
         </GridLayout>
 
-        <!-- Today's Expenses Section -->
+        <!-- ★ Loan shortcut button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_open_loans"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
+            android:text="ঋণের হিসাব"
+            android:textColor="@color/on_surface"
+            android:textStyle="bold"
+            app:backgroundTint="@color/tertiary_fixed"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_payments"
+            app:iconGravity="textStart"
+            app:iconTint="@color/on_tertiary_fixed" />
+
+        <!-- Today's Expenses -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -457,7 +468,7 @@
             android:layout_marginTop="8dp"
             android:nestedScrollingEnabled="false" />
 
-        <!-- Recent Transactions Section -->
+        <!-- Recent Transactions -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -495,7 +506,19 @@
             android:layout_marginTop="8dp"
             android:nestedScrollingEnabled="false" />
 
-
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_add_expense_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="20dp"
+            android:text="@string/add_new_expense"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/primary"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_add"
+            app:iconGravity="textStart"
+            app:iconTint="@color/on_primary" />
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

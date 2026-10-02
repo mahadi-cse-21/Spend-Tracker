@@ -10,6 +10,7 @@ import com.diodeit.spendtrack.models.Budget;
 import com.diodeit.spendtrack.models.CategoryBudget;
 import com.diodeit.spendtrack.models.Expense;
 import com.diodeit.spendtrack.models.ExpenseItem;
+import com.diodeit.spendtrack.models.Loan;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -22,6 +23,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "spendtrack.db";
     private static final int DB_VERSION = 4;
+
+    // ★ Loan table
+    private static final String TABLE_LOAN = "loans";
+    private static final String COL_LOAN_ID           = "id";
+    private static final String COL_LOAN_TYPE         = "type";
+    private static final String COL_LOAN_PERSON       = "person_name";
+    private static final String COL_LOAN_PRINCIPAL    = "principal_amount";
+    private static final String COL_LOAN_PAID         = "paid_amount";
+    private static final String COL_LOAN_DATE         = "date";
+    private static final String COL_LOAN_DUE_DATE     = "due_date";
+    private static final String COL_LOAN_NOTE         = "note";
+    private static final String COL_LOAN_CLOSED       = "closed";
 
     // Expense / income table
     private static final String TABLE_EXPENSE = "expenses";
@@ -79,6 +92,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_BUDGET_CAT_AMOUNT + " REAL, " +
                 COL_BUDGET_ALERT + " INTEGER DEFAULT 80, " +
                 "UNIQUE(" + COL_BUDGET_MONTH + ", " + COL_BUDGET_CATEGORY + "))");
+
+        db.execSQL("CREATE TABLE " + TABLE_LOAN + " (" +
+                COL_LOAN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COL_LOAN_TYPE + " TEXT, " +
+                COL_LOAN_PERSON + " TEXT, " +
+                COL_LOAN_PRINCIPAL + " REAL, " +
+                COL_LOAN_PAID + " REAL, " +
+                COL_LOAN_DATE + " INTEGER, " +
+                COL_LOAN_DUE_DATE + " INTEGER, " +
+                COL_LOAN_NOTE + " TEXT, " +
+                COL_LOAN_CLOSED + " INTEGER DEFAULT 0)");
     }
 
     @Override
@@ -88,6 +112,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         if (oldVersion < 4) {
             try { db.execSQL("ALTER TABLE " + TABLE_EXPENSE + " ADD COLUMN " + COL_TYPE + " TEXT DEFAULT 'expense'"); } catch (Exception ignored) {}
+        }
+        if (oldVersion < 5) {
+            db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_LOAN + " (" +
+                    COL_LOAN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    COL_LOAN_TYPE + " TEXT, " +
+                    COL_LOAN_PERSON + " TEXT, " +
+                    COL_LOAN_PRINCIPAL + " REAL, " +
+                    COL_LOAN_PAID + " REAL, " +
+                    COL_LOAN_DATE + " INTEGER, " +
+                    COL_LOAN_DUE_DATE + " INTEGER, " +
+                    COL_LOAN_NOTE + " TEXT, " +
+                    COL_LOAN_CLOSED + " INTEGER DEFAULT 0)");
         }
     }
 
@@ -400,5 +436,106 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         db.close();
         return expenses;
+    }
+
+    // ═══════════════════════════════════════════════════════
+// LOANS
+// ═══════════════════════════════════════════════════════
+
+    public long addLoan(Loan loan) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues v = new ContentValues();
+        v.put(COL_LOAN_TYPE,      loan.getType());
+        v.put(COL_LOAN_PERSON,    loan.getPersonName());
+        v.put(COL_LOAN_PRINCIPAL, loan.getPrincipalAmount());
+        v.put(COL_LOAN_PAID,      loan.getPaidAmount());
+        v.put(COL_LOAN_DATE,      loan.getDate());
+        v.put(COL_LOAN_DUE_DATE,  loan.getDueDate());
+        v.put(COL_LOAN_NOTE,      loan.getNote());
+        v.put(COL_LOAN_CLOSED,    loan.isClosed() ? 1 : 0);
+        long id = db.insert(TABLE_LOAN, null, v);
+        db.close();
+        return id;
+    }
+
+    public int updateLoan(Loan loan) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues v = new ContentValues();
+        v.put(COL_LOAN_TYPE,      loan.getType());
+        v.put(COL_LOAN_PERSON,    loan.getPersonName());
+        v.put(COL_LOAN_PRINCIPAL, loan.getPrincipalAmount());
+        v.put(COL_LOAN_PAID,      loan.getPaidAmount());
+        v.put(COL_LOAN_DATE,      loan.getDate());
+        v.put(COL_LOAN_DUE_DATE,  loan.getDueDate());
+        v.put(COL_LOAN_NOTE,      loan.getNote());
+        v.put(COL_LOAN_CLOSED,    loan.isClosed() ? 1 : 0);
+        int rows = db.update(TABLE_LOAN, v, COL_LOAN_ID + "=?",
+                new String[]{String.valueOf(loan.getId())});
+        db.close();
+        return rows;
+    }
+
+    public void deleteLoan(long id) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(TABLE_LOAN, COL_LOAN_ID + "=?", new String[]{String.valueOf(id)});
+        db.close();
+    }
+
+    public Loan getLoan(long id) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.query(TABLE_LOAN, null, COL_LOAN_ID + "=?",
+                new String[]{String.valueOf(id)}, null, null, null);
+        Loan loan = null;
+        if (c != null && c.moveToFirst()) {
+            loan = cursorToLoan(c);
+            c.close();
+        }
+        db.close();
+        return loan;
+    }
+
+    public List<Loan> getAllLoans() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor c = db.query(TABLE_LOAN, null, null, null,
+                null, null, COL_LOAN_DATE + " DESC");
+        List<Loan> list = new ArrayList<>();
+        if (c != null) {
+            while (c.moveToNext()) list.add(cursorToLoan(c));
+            c.close();
+        }
+        db.close();
+        return list;
+    }
+
+    /** মোট বাকি (আমি ঋণ নিয়েছি = দিতে হবে মোট) */
+    public double getTotalTakenRemaining() {
+        double total = 0;
+        for (Loan l : getAllLoans()) {
+            if (l.isTaken() && !l.isClosed()) total += l.getRemaining();
+        }
+        return total;
+    }
+
+    /** মোট পাব (আমি ঋণ দিয়েছি) */
+    public double getTotalGivenRemaining() {
+        double total = 0;
+        for (Loan l : getAllLoans()) {
+            if (l.isGiven() && !l.isClosed()) total += l.getRemaining();
+        }
+        return total;
+    }
+
+    private Loan cursorToLoan(Cursor c) {
+        Loan l = new Loan();
+        l.setId(c.getLong(c.getColumnIndexOrThrow(COL_LOAN_ID)));
+        l.setType(c.getString(c.getColumnIndexOrThrow(COL_LOAN_TYPE)));
+        l.setPersonName(c.getString(c.getColumnIndexOrThrow(COL_LOAN_PERSON)));
+        l.setPrincipalAmount(c.getDouble(c.getColumnIndexOrThrow(COL_LOAN_PRINCIPAL)));
+        l.setPaidAmount(c.getDouble(c.getColumnIndexOrThrow(COL_LOAN_PAID)));
+        l.setDate(c.getLong(c.getColumnIndexOrThrow(COL_LOAN_DATE)));
+        l.setDueDate(c.getLong(c.getColumnIndexOrThrow(COL_LOAN_DUE_DATE)));
+        l.setNote(c.getString(c.getColumnIndexOrThrow(COL_LOAN_NOTE)));
+        l.setClosed(c.getInt(c.getColumnIndexOrThrow(COL_LOAN_CLOSED)) == 1);
+        return l;
     }
 }

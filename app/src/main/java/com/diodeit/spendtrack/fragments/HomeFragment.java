@@ -100,10 +100,17 @@ public class HomeFragment extends Fragment {
         view.findViewById(R.id.btn_view_history).setOnClickListener(v ->
                 ((MainActivity) requireActivity()).navigateToTab("HISTORY"));
 
+        // ★ Open Loans
+        view.findViewById(R.id.btn_open_loans).setOnClickListener(v ->
+                ((MainActivity) requireActivity()).openDetailFragment(
+                        new LoansFragment(), "LOANS"));
+
         view.findViewById(R.id.btn_view_all).setOnClickListener(v ->
                 ((MainActivity) requireActivity()).navigateToTab("HISTORY"));
 
-     }
+        view.findViewById(R.id.btn_add_expense_bottom).setOnClickListener(v ->
+                ((MainActivity) requireActivity()).navigateToTab("ADD"));
+    }
 
     private void loadData() {
         if (!isAdded()) return;
