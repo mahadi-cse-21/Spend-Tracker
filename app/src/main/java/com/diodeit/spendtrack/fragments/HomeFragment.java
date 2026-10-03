@@ -100,7 +100,6 @@ public class HomeFragment extends Fragment {
         view.findViewById(R.id.btn_view_history).setOnClickListener(v ->
                 ((MainActivity) requireActivity()).navigateToTab("HISTORY"));
 
-        // ★ Open Loans
         view.findViewById(R.id.btn_open_loans).setOnClickListener(v ->
                 ((MainActivity) requireActivity()).openDetailFragment(
                         new LoansFragment(), "LOANS"));
@@ -118,28 +117,35 @@ public class HomeFragment extends Fragment {
         Calendar cal = Calendar.getInstance();
         int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
 
-        double income   = dbHelper.getCurrentMonthTotalIncome();
-        double expense  = dbHelper.getCurrentMonthTotalExpense();
+        // ★ All-time totals (since first use)
+        double income   = dbHelper.getTotalIncomeAllTime();
+        double expense  = dbHelper.getTotalExpenseAllTime();
         double balance  = income - expense;
         double dailyAvg = expense / Math.max(1, dayOfMonth);
 
+        // Balance (big number)
         tvRemainingBudget.setText(bnConverter.toBengali(
                 String.format(Locale.US, "%,.0f", balance)));
 
+        // Income | Expense labels
         tvSpentLabel.setText("আয়: ৳" + bnConverter.toBengali(
                 String.format(Locale.US, "%,.0f", income)));
         tvBudgetGoal.setText("ব্যয়: ৳" + bnConverter.toBengali(
                 String.format(Locale.US, "%,.0f", expense)));
 
+        // Total expense metric (right)
         tvTotalExpense.setText(bnConverter.toBengali(
                 String.format(Locale.US, "%,.0f", expense)));
 
+        // Daily average
         tvDailyAverage.setText(bnConverter.formatCurrency(dailyAvg));
 
+        // Progress = expense / income (all-time)
         int progress = income > 0 ? (int) ((expense / income) * 100) : 0;
         budgetProgress.setProgress(Math.min(progress, 100));
         tvBudgetUsed.setText(bnConverter.toBengali(progress) + "% ব্যয় হয়েছে");
 
+        // Pace indicator
         if (income > 0 && expense > income * 0.8) {
             tvSpendingPace.setText("সতর্কতা");
             tvSpendingPace.setBackgroundResource(R.drawable.bg_pill_error);
@@ -148,6 +154,7 @@ public class HomeFragment extends Fragment {
             tvSpendingPace.setBackgroundResource(R.drawable.bg_pill_primary_fixed);
         }
 
+        // Today's list
         List<Expense> todayExpenses = dbHelper.getTodayExpenses();
         todayAdapter.updateData(todayExpenses);
 
@@ -168,6 +175,7 @@ public class HomeFragment extends Fragment {
         }
         tvTodayCount.setText(bnConverter.toBengali(todayExpenses.size()) + "টি এন্ট্রি");
 
+        // Recent
         List<Expense> recentExpenses = dbHelper.getRecentExpenses(10);
         recentAdapter.updateData(recentExpenses);
     }

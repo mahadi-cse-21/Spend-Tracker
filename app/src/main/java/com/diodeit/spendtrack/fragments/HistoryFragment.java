@@ -10,6 +10,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 
@@ -26,6 +28,7 @@ import com.diodeit.spendtrack.adapters.TransactionHistoryAdapter;
 import com.diodeit.spendtrack.databases.DatabaseHelper;
 import com.diodeit.spendtrack.models.Expense;
 import com.diodeit.spendtrack.utils.BengaliNumberConverter;
+import com.diodeit.spendtrack.utils.ExportHelper;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,6 +52,7 @@ public class HistoryFragment extends Fragment {
     private Calendar currentCal;
     private SimpleDateFormat monthFormat;
     private List<Expense> allExpenses = new ArrayList<>();
+    private List<Expense> filteredExpenses = new ArrayList<>();
     private String selectedFilter;
 
     @Nullable
@@ -144,7 +148,7 @@ public class HistoryFragment extends Fragment {
 
     private void applyFilters() {
         String query = etSearch.getText().toString().toLowerCase();
-        List<Expense> filtered = new ArrayList<>();
+        filteredExpenses = new ArrayList<>();
         double income = 0, expense = 0;
 
         for (Expense e : allExpenses) {
@@ -169,19 +173,19 @@ public class HistoryFragment extends Fragment {
             }
 
             if (matchesQuery && matchesFilter) {
-                filtered.add(e);
+                filteredExpenses.add(e);
                 if (e.isIncome()) income += e.getAmount();
                 else              expense += e.getAmount();
             }
         }
 
-        adapter.updateData(filtered);
+        adapter.updateData(filteredExpenses);
         tvTotalExpense.setText(
                 "আয় " + bnConverter.formatCurrency(income)
                         + "  |  ব্যয় " + bnConverter.formatCurrency(expense));
         tvTotalTransactions.setText(
-                getString(R.string.entries, bnConverter.toBengali(filtered.size())));
-        toggleEmptyState(filtered.isEmpty());
+                getString(R.string.entries, bnConverter.toBengali(filteredExpenses.size())));
+        toggleEmptyState(filteredExpenses.isEmpty());
     }
 
     private void toggleEmptyState(boolean show) {
@@ -201,22 +205,65 @@ public class HistoryFragment extends Fragment {
         view.findViewById(R.id.fab_export).setOnClickListener(v -> showExportSheet());
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // EXPORT SHEET — now actually exports
+    // ═══════════════════════════════════════════════════════════
     private void showExportSheet() {
         View sheetView = getLayoutInflater().inflate(R.layout.dialog_export, null);
-        com.google.android.material.bottomsheet.BottomSheetDialog dialog =
-                new com.google.android.material.bottomsheet.BottomSheetDialog(requireContext());
+        BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
         dialog.setContentView(sheetView);
+
         sheetView.findViewById(R.id.btn_close_export).setOnClickListener(v -> dialog.dismiss());
+
+        // ─── PDF EXPORT — exports the currently visible (filtered) list ───
         sheetView.findViewById(R.id.btn_export_pdf).setOnClickListener(v -> {
-            android.widget.Toast.makeText(requireContext(),
-                    R.string.export_success, android.widget.Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
+            if (filteredExpenses == null || filteredExpenses.isEmpty()) {
+                Toast.makeText(requireContext(),
+                        "কোনো লেনদেন নেই", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Sum up the filtered set
+            double income = 0, expense = 0;
+            for (Expense e : filteredExpenses) {
+                if (e.isIncome()) income += e.getAmount();
+                else              expense += e.getAmount();
+            }
+            double balance = income - expense;
+
+            String label = bnConverter.toBengali(monthFormat.format(currentCal.getTime()));
+
+            boolean ok = ExportHelper.exportPdf(
+                    requireContext(),
+                    filteredExpenses,
+                    income, expense, balance, label);
+
+            Toast.makeText(requireContext(),
+                    ok ? "পিডিএফ ডাউনলোড সম্পন্ন — Downloads/SpendTrack"
+                            : "পিডিএফ তৈরি ব্যর্থ",
+                    Toast.LENGTH_LONG).show();
+
+            if (ok) dialog.dismiss();
         });
+
+        // ─── CSV EXPORT — exports the currently visible (filtered) list ───
         sheetView.findViewById(R.id.btn_export_csv).setOnClickListener(v -> {
-            android.widget.Toast.makeText(requireContext(),
-                    R.string.export_success, android.widget.Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
+            if (filteredExpenses == null || filteredExpenses.isEmpty()) {
+                Toast.makeText(requireContext(),
+                        "কোনো লেনদেন নেই", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            boolean ok = ExportHelper.exportCsv(requireContext(), filteredExpenses);
+
+            Toast.makeText(requireContext(),
+                    ok ? "ব্যাকআপ সম্পন্ন — Downloads/SpendTrack"
+                            : "ব্যাকআপ তৈরি ব্যর্থ",
+                    Toast.LENGTH_LONG).show();
+
+            if (ok) dialog.dismiss();
         });
+
         dialog.show();
     }
 }

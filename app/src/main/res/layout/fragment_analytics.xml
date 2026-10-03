@@ -17,33 +17,118 @@
             android:layout_height="?attr/actionBarSize"
             android:background="@color/surface"
             app:title="@string/analytics"
-            app:titleTextColor="@color/on_surface" />
+            app:titleTextColor="@color/on_surface"
+            app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge" />
 
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="80dp"
+        android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="16dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="32dp">
 
-            <!-- Period Selector -->
+            <!-- ★ Period Selector Card -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/surface_container_low"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="10dp">
+
+                    <ImageView
+                        android:id="@+id/btn_prev_period"
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:background="@drawable/bg_circle_surface_container"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_chevron_left"
+                        app:tint="@color/on_surface" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_calendar_today"
+                            app:tint="@color/primary" />
+
+                        <TextView
+                            android:id="@+id/tv_selected_period"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:text="-"
+                            android:textColor="@color/on_surface"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_current_badge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:background="@drawable/bg_pill_primary_fixed"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="3dp"
+                            android:text="বর্তমান"
+                            android:textColor="@color/on_primary_fixed"
+                            android:textSize="10sp"
+                            android:textStyle="bold"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/btn_next_period"
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:background="@drawable/bg_circle_surface_container"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:padding="10dp"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/on_surface" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Period Selector Tabs -->
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tab_period"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
                 android:background="@color/surface_container_low"
                 app:tabGravity="fill"
-                app:tabMode="fixed"
                 app:tabIndicatorColor="@color/primary"
-                app:tabSelectedTextColor="@color/on_primary"
-                app:tabTextColor="@color/on_surface_variant">
+                app:tabIndicatorFullWidth="false"
+                app:tabIndicatorHeight="3dp"
+                app:tabMode="fixed"
+                app:tabRippleColor="@android:color/transparent"
+                app:tabSelectedTextColor="@color/on_surface"
+                app:tabTextColor="@color/on_surface_variant"
+                app:tabTextAppearance="@style/TextAppearance.Material3.LabelLarge">
 
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
@@ -61,21 +146,22 @@
                     android:text="@string/yearly" />
             </com.google.android.material.tabs.TabLayout>
 
-            <!-- Overview Card -->
+            <!-- ═══════════ OVERVIEW CARD ═══════════ -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 app:cardBackgroundColor="@color/surface_container_lowest"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
+                    <!-- Header: Icon + Title + Badge -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -83,33 +169,35 @@
                         android:orientation="horizontal">
 
                         <ImageView
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
+                            android:layout_width="46dp"
+                            android:layout_height="46dp"
                             android:background="@drawable/bg_circle_category"
-                            android:padding="8dp"
+                            android:contentDescription="@string/analytics"
+                            android:padding="11dp"
                             android:src="@drawable/ic_analytics"
-                            app:tint="@color/on_primary_fixed"
-                            android:contentDescription="@string/analytics" />
+                            app:tint="@color/on_primary_fixed" />
 
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
                             android:layout_marginStart="12dp"
+                            android:layout_weight="1"
                             android:orientation="vertical">
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/month_expense_title"
+                                android:text="এই পর্বের ব্যালেন্স"
                                 android:textColor="@color/on_surface"
-                                android:textSize="14sp" />
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/tv_budget_amount_label"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="@string/budget_amount"
+                                android:layout_marginTop="2dp"
+                                android:text="আয় ৳০"
                                 android:textColor="@color/on_surface_variant"
                                 android:textSize="11sp" />
                         </LinearLayout>
@@ -120,53 +208,153 @@
                             android:layout_height="wrap_content"
                             android:background="@drawable/bg_pill_surface_container"
                             android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp"
-                            android:text="-"
+                            android:paddingVertical="5dp"
+                            android:text="ব্যয় ০%"
                             android:textColor="@color/on_surface_variant"
-                            android:textSize="11sp" />
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
+                    <!-- Hero number -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="20dp"
                         android:baselineAligned="false"
+                        android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <TextView
                             android:id="@+id/tv_monthly_total"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:letterSpacing="-0.03"
                             android:text="৳ ০"
                             android:textColor="@color/on_surface"
-                            android:textSize="32sp"
+                            android:textSize="38sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/tv_total_budget_label"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:text="-"
+                            android:layout_marginStart="8dp"
+                            android:layout_marginBottom="6dp"
+                            android:text="মোট ব্যয়"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="11sp" />
                     </LinearLayout>
 
+                    <!-- 3 stat pills -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <!-- Income -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_pill_surface_container_low"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="আয়"
+                                android:textColor="@color/on_surface_variant"
+                                android:textSize="10sp" />
+
+                            <TextView
+                                android:id="@+id/tv_income_stat"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="৳ ০"
+                                android:textColor="@color/primary"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- Expense -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_pill_surface_container_low"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="খরচ"
+                                android:textColor="@color/on_surface_variant"
+                                android:textSize="10sp" />
+
+                            <TextView
+                                android:id="@+id/tv_expense_stat"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="৳ ০"
+                                android:textColor="@color/error"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <!-- Remaining -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_pill_surface_container_low"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="বাকি"
+                                android:textColor="@color/on_surface_variant"
+                                android:textSize="10sp" />
+
+                            <TextView
+                                android:id="@+id/tv_remaining_stat"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="৳ ০"
+                                android:textColor="@color/tertiary"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Progress bar -->
                     <com.google.android.material.progressindicator.LinearProgressIndicator
                         android:id="@+id/progress_overall"
                         android:layout_width="match_parent"
                         android:layout_height="10dp"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="18dp"
                         android:progress="0"
                         app:indicatorColor="@color/primary"
                         app:trackColor="@color/surface_container"
                         app:trackCornerRadius="5dp"
                         app:trackThickness="10dp" />
 
+                    <!-- Footer -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <TextView
@@ -182,27 +370,31 @@
                             android:id="@+id/tv_days_left"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:background="@drawable/bg_pill_surface_container"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp"
                             android:text="-"
                             android:textColor="@color/on_surface_variant"
-                            android:textSize="11sp" />
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Category Breakdown with Donut Chart -->
+            <!-- ═══════════ CATEGORY BREAKDOWN ═══════════ -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 app:cardBackgroundColor="@color/surface_container_lowest"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -214,7 +406,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:drawablePadding="8dp"
+                            android:drawablePadding="10dp"
                             android:text="@string/category_breakdown"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp"
@@ -227,19 +419,20 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:background="@drawable/bg_pill_primary_fixed"
-                            android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="3dp"
                             android:text="-"
                             android:textColor="@color/on_primary_fixed"
-                            android:textSize="11sp" />
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
-                    <!-- Donut Chart Placeholder -->
+                    <!-- Donut chart -->
                     <FrameLayout
-                        android:layout_width="180dp"
-                        android:layout_height="180dp"
+                        android:layout_width="200dp"
+                        android:layout_height="200dp"
                         android:layout_gravity="center"
-                        android:layout_marginTop="16dp">
+                        android:layout_marginTop="20dp">
 
                         <com.diodeit.spendtrack.views.DonutChartView
                             android:id="@+id/donut_chart"
@@ -258,24 +451,27 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/highest_expense"
                                 android:textColor="@color/on_surface_variant"
-                                android:textSize="11sp" />
+                                android:textSize="10sp" />
 
                             <TextView
                                 android:id="@+id/tv_highest_percent"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
                                 android:text="-"
                                 android:textColor="@color/on_surface"
-                                android:textSize="16sp"
+                                android:textSize="20sp"
                                 android:textStyle="bold" />
 
                             <TextView
                                 android:id="@+id/tv_highest_category"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
                                 android:text="-"
                                 android:textColor="@color/primary"
-                                android:textSize="10sp" />
+                                android:textSize="11sp"
+                                android:textStyle="bold" />
                         </LinearLayout>
                     </FrameLayout>
 
@@ -284,40 +480,41 @@
                         android:id="@+id/ll_legend"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
+                        android:layout_marginTop="20dp"
                         android:orientation="vertical" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Savings Insight Card -->
+            <!-- ═══════════ SAVINGS INSIGHT ═══════════ -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 app:cardBackgroundColor="@color/tertiary_fixed"
-                app:cardCornerRadius="16dp"
+                app:cardCornerRadius="24dp"
                 app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
                     <ImageView
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
                         android:background="@drawable/bg_circle_primary"
-                        android:padding="12dp"
+                        android:contentDescription="@string/smart_tips"
+                        android:padding="13dp"
                         android:src="@drawable/ic_tips_and_updates"
-                        app:tint="@color/on_primary"
-                        android:contentDescription="@string/smart_tips" />
+                        app:tint="@color/on_primary" />
 
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:layout_marginStart="16dp"
+                        android:layout_weight="1"
                         android:orientation="vertical">
 
                         <LinearLayout
@@ -331,7 +528,7 @@
                                 android:layout_height="wrap_content"
                                 android:text="@string/savings_insight"
                                 android:textColor="@color/on_tertiary_fixed"
-                                android:textSize="14sp"
+                                android:textSize="15sp"
                                 android:textStyle="bold" />
 
                             <TextView
@@ -339,7 +536,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="8dp"
                                 android:background="@drawable/bg_pill_surface_container"
-                                android:paddingHorizontal="6dp"
+                                android:paddingHorizontal="8dp"
                                 android:paddingVertical="2dp"
                                 android:text="@string/smart_tips"
                                 android:textColor="@color/on_surface_variant"
@@ -347,9 +544,10 @@
                         </LinearLayout>
 
                         <TextView
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
+                            android:lineSpacingExtra="2dp"
                             android:text="@string/insight_text"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="13sp" />
@@ -357,16 +555,28 @@
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Budget Health Section -->
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- ═══════════ BUDGET HEALTH ═══════════ -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginStart="4dp"
-                android:text="@string/budget_health"
-                android:textColor="@color/on_surface"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="24dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="18dp"
+                    android:background="@drawable/bg_pill_primary_fixed" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="@string/budget_health"
+                    android:textColor="@color/on_surface"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/ll_budget_health"
@@ -375,20 +585,20 @@
                 android:layout_marginTop="12dp"
                 android:orientation="vertical" />
 
-            <!-- Weekly Trend Chart -->
+            <!-- ═══════════ WEEKLY TREND CHART ═══════════ -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="20dp"
                 app:cardBackgroundColor="@color/surface_container_lowest"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="1dp">
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -400,7 +610,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:drawablePadding="8dp"
+                            android:drawablePadding="10dp"
                             android:text="@string/daily_weekly_pace"
                             android:textColor="@color/on_surface"
                             android:textSize="16sp"
@@ -412,9 +622,13 @@
                             android:id="@+id/tv_chart_month"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:background="@drawable/bg_pill_surface_container"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="3dp"
                             android:text="-"
                             android:textColor="@color/on_surface_variant"
-                            android:textSize="11sp" />
+                            android:textSize="10sp"
+                            android:textStyle="bold" />
                     </LinearLayout>
 
                     <com.diodeit.spendtrack.views.BarChartView
@@ -423,44 +637,99 @@
                         android:layout_height="180dp"
                         android:layout_marginTop="16dp" />
 
+                    <!-- Stats divider + row -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginTop="16dp"
+                        android:background="@color/surface_container" />
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:background="@drawable/bg_pill_surface_container_low"
-                        android:orientation="horizontal"
-                        android:padding="10dp">
+                        android:layout_marginTop="14dp"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
 
-                        <TextView
-                            android:id="@+id/tv_avg_daily"
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="-"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="11sp" />
+                            android:orientation="vertical">
 
-                        <TextView
-                            android:id="@+id/tv_max_expense"
-                            android:layout_width="wrap_content"
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="দৈনিক গড়"
+                                android:textColor="@color/on_surface_variant"
+                                android:textSize="10sp" />
+
+                            <TextView
+                                android:id="@+id/tv_avg_daily"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="-"
+                                android:textColor="@color/on_surface"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <View
+                            android:layout_width="1dp"
+                            android:layout_height="match_parent"
+                            android:background="@color/surface_container" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:text="-"
-                            android:textColor="@color/on_surface_variant"
-                            android:textSize="11sp" />
+                            android:layout_marginStart="16dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="সর্বোচ্চ খরচ"
+                                android:textColor="@color/on_surface_variant"
+                                android:textSize="10sp" />
+
+                            <TextView
+                                android:id="@+id/tv_max_expense"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="-"
+                                android:textColor="@color/on_surface"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Export Section -->
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- ═══════════ EXPORT SECTION ═══════════ -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginStart="4dp"
-                android:text="@string/report_backup"
-                android:textColor="@color/on_surface"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="24dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="18dp"
+                    android:background="@drawable/bg_pill_primary_fixed" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="@string/report_backup"
+                    android:textColor="@color/on_surface"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -472,28 +741,34 @@
                     android:id="@+id/btn_pdf_export"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="0dp"
-                    android:layout_height="56dp"
+                    android:layout_height="60dp"
+                    android:layout_marginEnd="5dp"
                     android:layout_weight="1"
-                    android:layout_marginEnd="4dp"
                     android:text="@string/pdf_download"
                     android:textColor="@color/on_surface"
+                    android:textSize="12sp"
                     app:backgroundTint="@color/surface_container_high"
-                    app:cornerRadius="16dp"
+                    app:cornerRadius="18dp"
                     app:icon="@drawable/ic_picture_as_pdf"
+                    app:iconGravity="textTop"
+                    app:iconPadding="4dp"
                     app:iconTint="@color/primary" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_csv_export"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="0dp"
-                    android:layout_height="56dp"
+                    android:layout_height="60dp"
+                    android:layout_marginStart="5dp"
                     android:layout_weight="1"
-                    android:layout_marginStart="4dp"
                     android:text="@string/offline_backup"
                     android:textColor="@color/on_surface"
+                    android:textSize="12sp"
                     app:backgroundTint="@color/surface_container_high"
-                    app:cornerRadius="16dp"
+                    app:cornerRadius="18dp"
                     app:icon="@drawable/ic_save_alt"
+                    app:iconGravity="textTop"
+                    app:iconPadding="4dp"
                     app:iconTint="@color/secondary" />
             </LinearLayout>
 

@@ -84,7 +84,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="অবশিষ্ট ব্যালেন্স"
+                            android:text="মোট ব্যালেন্স (সর্বকালের)"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="12sp"
                             android:textAllCaps="true" />
@@ -184,6 +184,7 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
+                <!-- Metric Triad -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -201,7 +202,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/today_expense_label"
+                            android:text="আজকের লেনদেন"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="10sp" />
 
@@ -226,7 +227,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/daily_average_label"
+                            android:text="দৈনিক গড়"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="10sp" />
 
@@ -416,7 +417,7 @@
             </LinearLayout>
         </GridLayout>
 
-        <!-- ★ Loan shortcut button -->
+        <!-- ★ Loan shortcut -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_open_loans"
             style="@style/Widget.Material3.Button.TonalButton"

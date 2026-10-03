@@ -22,21 +22,9 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "spendtrack.db";
-    private static final int DB_VERSION = 4;
+    private static final int DB_VERSION = 5;
 
-    // ★ Loan table
-    private static final String TABLE_LOAN = "loans";
-    private static final String COL_LOAN_ID           = "id";
-    private static final String COL_LOAN_TYPE         = "type";
-    private static final String COL_LOAN_PERSON       = "person_name";
-    private static final String COL_LOAN_PRINCIPAL    = "principal_amount";
-    private static final String COL_LOAN_PAID         = "paid_amount";
-    private static final String COL_LOAN_DATE         = "date";
-    private static final String COL_LOAN_DUE_DATE     = "due_date";
-    private static final String COL_LOAN_NOTE         = "note";
-    private static final String COL_LOAN_CLOSED       = "closed";
-
-    // Expense / income table
+    // ─── Expense table ─────────────────────────────────────────
     private static final String TABLE_EXPENSE = "expenses";
     private static final String COL_ID = "id";
     private static final String COL_AMOUNT = "amount";
@@ -51,7 +39,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_ITEMS_JSON = "items_json";
     private static final String COL_TYPE = "type";
 
-    // Budget table
+    // ─── Budget table ──────────────────────────────────────────
     private static final String TABLE_BUDGET = "budgets";
     private static final String COL_BUDGET_ID = "id";
     private static final String COL_BUDGET_MONTH = "month";
@@ -59,6 +47,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_BUDGET_CATEGORY = "category";
     private static final String COL_BUDGET_CAT_AMOUNT = "category_amount";
     private static final String COL_BUDGET_ALERT = "alert_percent";
+
+    // ─── Loan table ────────────────────────────────────────────
+    private static final String TABLE_LOAN = "loans";
+    private static final String COL_LOAN_ID = "id";
+    private static final String COL_LOAN_TYPE = "type";
+    private static final String COL_LOAN_PERSON = "person_name";
+    private static final String COL_LOAN_PRINCIPAL = "principal_amount";
+    private static final String COL_LOAN_PAID = "paid_amount";
+    private static final String COL_LOAN_DATE = "date";
+    private static final String COL_LOAN_DUE_DATE = "due_date";
+    private static final String COL_LOAN_NOTE = "note";
+    private static final String COL_LOAN_CLOSED = "closed";
 
     private static final String CAT_TOTAL = "__TOTAL__";
 
@@ -70,6 +70,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        // Expense table
         db.execSQL("CREATE TABLE " + TABLE_EXPENSE + " (" +
                 COL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_AMOUNT + " REAL NOT NULL, " +
@@ -84,6 +85,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_ITEMS_JSON + " TEXT, " +
                 COL_TYPE + " TEXT DEFAULT 'expense')");
 
+        // Budget table
         db.execSQL("CREATE TABLE " + TABLE_BUDGET + " (" +
                 COL_BUDGET_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_BUDGET_MONTH + " TEXT, " +
@@ -93,6 +95,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_BUDGET_ALERT + " INTEGER DEFAULT 80, " +
                 "UNIQUE(" + COL_BUDGET_MONTH + ", " + COL_BUDGET_CATEGORY + "))");
 
+        // Loan table
         db.execSQL("CREATE TABLE " + TABLE_LOAN + " (" +
                 COL_LOAN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COL_LOAN_TYPE + " TEXT, " +
@@ -114,16 +117,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             try { db.execSQL("ALTER TABLE " + TABLE_EXPENSE + " ADD COLUMN " + COL_TYPE + " TEXT DEFAULT 'expense'"); } catch (Exception ignored) {}
         }
         if (oldVersion < 5) {
-            db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_LOAN + " (" +
-                    COL_LOAN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    COL_LOAN_TYPE + " TEXT, " +
-                    COL_LOAN_PERSON + " TEXT, " +
-                    COL_LOAN_PRINCIPAL + " REAL, " +
-                    COL_LOAN_PAID + " REAL, " +
-                    COL_LOAN_DATE + " INTEGER, " +
-                    COL_LOAN_DUE_DATE + " INTEGER, " +
-                    COL_LOAN_NOTE + " TEXT, " +
-                    COL_LOAN_CLOSED + " INTEGER DEFAULT 0)");
+            try {
+                db.execSQL("CREATE TABLE IF NOT EXISTS " + TABLE_LOAN + " (" +
+                        COL_LOAN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        COL_LOAN_TYPE + " TEXT, " +
+                        COL_LOAN_PERSON + " TEXT, " +
+                        COL_LOAN_PRINCIPAL + " REAL, " +
+                        COL_LOAN_PAID + " REAL, " +
+                        COL_LOAN_DATE + " INTEGER, " +
+                        COL_LOAN_DUE_DATE + " INTEGER, " +
+                        COL_LOAN_NOTE + " TEXT, " +
+                        COL_LOAN_CLOSED + " INTEGER DEFAULT 0)");
+            } catch (Exception ignored) {}
         }
     }
 
@@ -131,12 +136,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getWritableDatabase();
         db.delete(TABLE_EXPENSE, null, null);
         db.delete(TABLE_BUDGET, null, null);
+        db.delete(TABLE_LOAN, null, null);
         db.close();
     }
 
-    // ================================================================
-    // ADD
-    // ================================================================
+    // ═══════════════════════════════════════════════════════════
+    // EXPENSE INSERT / UPDATE
+    // ═══════════════════════════════════════════════════════════
     public long addExpense(Expense expense) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -170,15 +176,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(COL_TAGS, expense.getTags());
         values.put(COL_ITEMS_JSON, gson.toJson(expense.getItems()));
         values.put(COL_TYPE, expense.getType() != null ? expense.getType() : "expense");
-
         int rows = db.update(TABLE_EXPENSE, values, COL_ID + "=?",
                 new String[]{String.valueOf(id)});
         db.close();
         return rows;
     }
-    // ================================================================
-    // READ
-    // ================================================================
+
+    public void deleteExpense(long id) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete(TABLE_EXPENSE, COL_ID + "=?", new String[]{String.valueOf(id)});
+        db.close();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // EXPENSE SELECT
+    // ═══════════════════════════════════════════════════════════
     public Expense getExpense(long id) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABLE_EXPENSE, null, COL_ID + "=?",
@@ -246,9 +258,23 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return getExpensesByRange(startOfMonth, endOfMonth);
     }
 
-    // ================================================================
-    // TOTALS
-    // ================================================================
+    /** Returns every row in the table. Used for backup export. */
+    public List<Expense> getAllExpenses() {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABLE_EXPENSE, null, null, null,
+                null, null, COL_DATE + " DESC");
+        List<Expense> expenses = new ArrayList<>();
+        if (cursor != null) {
+            while (cursor.moveToNext()) expenses.add(cursorToExpense(cursor));
+            cursor.close();
+        }
+        db.close();
+        return expenses;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // TOTALS — CURRENT MONTH
+    // ═══════════════════════════════════════════════════════════
     public double getCurrentMonthTotalIncome() {
         Calendar cal = Calendar.getInstance();
         return getTypeTotalForMonth("income", cal.get(Calendar.YEAR), cal.get(Calendar.MONTH));
@@ -288,10 +314,47 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return total;
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // TOTALS — ALL TIME
+    // ═══════════════════════════════════════════════════════════
+    /** সৃষ্টির শুরু থেকে সব আয়ের যোগফল */
+    public double getTotalIncomeAllTime() {
+        return getTypeTotalAllTime("income");
+    }
+
+    /** সৃষ্টির শুরু থেকে সব ব্যয়ের যোগফল */
+    public double getTotalExpenseAllTime() {
+        return getTypeTotalAllTime("expense");
+    }
+
+    /** সৃষ্টির শুরু থেকে সব ব্যালেন্স (আয় − ব্যয়) */
+    public double getBalanceAllTime() {
+        return getTotalIncomeAllTime() - getTotalExpenseAllTime();
+    }
+
+    private double getTypeTotalAllTime(String type) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABLE_EXPENSE,
+                new String[]{"SUM(" + COL_AMOUNT + ")"},
+                COL_TYPE + "=?",
+                new String[]{type},
+                null, null, null);
+        double total = 0;
+        if (cursor != null && cursor.moveToFirst()) {
+            total = cursor.getDouble(0);
+            cursor.close();
+        }
+        db.close();
+        return total;
+    }
+
+    /** Expense-only total for a category. Safe for budgets. */
     public double getCategoryRangeTotalExpense(String category, long start, long end) {
         SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(TABLE_EXPENSE, new String[]{"SUM(" + COL_AMOUNT + ")"},
-                COL_CATEGORY + "=? AND " + COL_DATE + " BETWEEN ? AND ?",
+        Cursor cursor = db.query(TABLE_EXPENSE,
+                new String[]{"SUM(" + COL_AMOUNT + ")"},
+                COL_CATEGORY + "=? AND " + COL_TYPE + "='expense' AND " +
+                        COL_DATE + " BETWEEN ? AND ?",
                 new String[]{category, String.valueOf(start), String.valueOf(end)},
                 null, null, null);
         double total = 0;
@@ -303,9 +366,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return total;
     }
 
-    // ================================================================
+    // ═══════════════════════════════════════════════════════════
     // BUDGET
-    // ================================================================
+    // ═══════════════════════════════════════════════════════════
     public Budget getCurrentMonthBudget() {
         Calendar cal = Calendar.getInstance();
         String monthKey = cal.get(Calendar.YEAR) + "-" + (cal.get(Calendar.MONTH) + 1);
@@ -387,61 +450,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    public void deleteExpense(long id) {
-        SQLiteDatabase db = getWritableDatabase();
-        db.delete(TABLE_EXPENSE, COL_ID + "=?", new String[]{String.valueOf(id)});
-        db.close();
-    }
-
-    private Expense cursorToExpense(Cursor cursor) {
-        Expense expense = new Expense();
-        expense.setId(cursor.getLong(cursor.getColumnIndexOrThrow(COL_ID)));
-        expense.setAmount(cursor.getDouble(cursor.getColumnIndexOrThrow(COL_AMOUNT)));
-        expense.setCategory(cursor.getString(cursor.getColumnIndexOrThrow(COL_CATEGORY)));
-        expense.setPaymentMethod(cursor.getString(cursor.getColumnIndexOrThrow(COL_PAYMENT)));
-        expense.setNote(cursor.getString(cursor.getColumnIndexOrThrow(COL_NOTE)));
-        expense.setDate(cursor.getLong(cursor.getColumnIndexOrThrow(COL_DATE)));
-        expense.setReceiptPath(cursor.getString(cursor.getColumnIndexOrThrow(COL_RECEIPT)));
-        expense.setWallet(cursor.getString(cursor.getColumnIndexOrThrow(COL_WALLET)));
-        expense.setVendor(cursor.getString(cursor.getColumnIndexOrThrow(COL_VENDOR)));
-        expense.setTags(cursor.getString(cursor.getColumnIndexOrThrow(COL_TAGS)));
-
-        int typeIdx = cursor.getColumnIndex(COL_TYPE);
-        if (typeIdx >= 0) {
-            String t = cursor.getString(typeIdx);
-            expense.setType(t != null ? t : "expense");
-        }
-
-        int itemsIdx = cursor.getColumnIndex(COL_ITEMS_JSON);
-        if (itemsIdx >= 0) {
-            String itemsJson = cursor.getString(itemsIdx);
-            if (itemsJson != null && !itemsJson.isEmpty()) {
-                Type type = new TypeToken<List<ExpenseItem>>(){}.getType();
-                List<ExpenseItem> items = gson.fromJson(itemsJson, type);
-                if (items != null) expense.setItems(items);
-            }
-        }
-        return expense;
-    }
-
-    /** Returns every row in the table. Used for backup export. */
-    public List<Expense> getAllExpenses() {
-        SQLiteDatabase db = getReadableDatabase();
-        Cursor cursor = db.query(TABLE_EXPENSE, null, null, null,
-                null, null, COL_DATE + " DESC");
-        List<Expense> expenses = new ArrayList<>();
-        if (cursor != null) {
-            while (cursor.moveToNext()) expenses.add(cursorToExpense(cursor));
-            cursor.close();
-        }
-        db.close();
-        return expenses;
-    }
-
-    // ═══════════════════════════════════════════════════════
-// LOANS
-// ═══════════════════════════════════════════════════════
-
+    // ═══════════════════════════════════════════════════════════
+    // LOANS
+    // ═══════════════════════════════════════════════════════════
     public long addLoan(Loan loan) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues v = new ContentValues();
@@ -525,6 +536,40 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return total;
     }
 
+    // ═══════════════════════════════════════════════════════════
+    // CURSOR CONVERTERS
+    // ═══════════════════════════════════════════════════════════
+    private Expense cursorToExpense(Cursor cursor) {
+        Expense expense = new Expense();
+        expense.setId(cursor.getLong(cursor.getColumnIndexOrThrow(COL_ID)));
+        expense.setAmount(cursor.getDouble(cursor.getColumnIndexOrThrow(COL_AMOUNT)));
+        expense.setCategory(cursor.getString(cursor.getColumnIndexOrThrow(COL_CATEGORY)));
+        expense.setPaymentMethod(cursor.getString(cursor.getColumnIndexOrThrow(COL_PAYMENT)));
+        expense.setNote(cursor.getString(cursor.getColumnIndexOrThrow(COL_NOTE)));
+        expense.setDate(cursor.getLong(cursor.getColumnIndexOrThrow(COL_DATE)));
+        expense.setReceiptPath(cursor.getString(cursor.getColumnIndexOrThrow(COL_RECEIPT)));
+        expense.setWallet(cursor.getString(cursor.getColumnIndexOrThrow(COL_WALLET)));
+        expense.setVendor(cursor.getString(cursor.getColumnIndexOrThrow(COL_VENDOR)));
+        expense.setTags(cursor.getString(cursor.getColumnIndexOrThrow(COL_TAGS)));
+
+        int typeIdx = cursor.getColumnIndex(COL_TYPE);
+        if (typeIdx >= 0) {
+            String t = cursor.getString(typeIdx);
+            expense.setType(t != null ? t : "expense");
+        }
+
+        int itemsIdx = cursor.getColumnIndex(COL_ITEMS_JSON);
+        if (itemsIdx >= 0) {
+            String itemsJson = cursor.getString(itemsIdx);
+            if (itemsJson != null && !itemsJson.isEmpty()) {
+                Type type = new TypeToken<List<ExpenseItem>>(){}.getType();
+                List<ExpenseItem> items = gson.fromJson(itemsJson, type);
+                if (items != null) expense.setItems(items);
+            }
+        }
+        return expense;
+    }
+
     private Loan cursorToLoan(Cursor c) {
         Loan l = new Loan();
         l.setId(c.getLong(c.getColumnIndexOrThrow(COL_LOAN_ID)));
@@ -537,5 +582,97 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         l.setNote(c.getString(c.getColumnIndexOrThrow(COL_LOAN_NOTE)));
         l.setClosed(c.getInt(c.getColumnIndexOrThrow(COL_LOAN_CLOSED)) == 1);
         return l;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+// WEEKLY TOTALS — current week (Sunday–Saturday)
+// ═══════════════════════════════════════════════════════════
+    public double getCurrentWeekTotalIncome() {
+        long[] range = getCurrentWeekRange();
+        return getTypeTotalInRange("income", range[0], range[1]);
+    }
+
+    public double getCurrentWeekTotalExpense() {
+        long[] range = getCurrentWeekRange();
+        return getTypeTotalInRange("expense", range[0], range[1]);
+    }
+
+    public List<Expense> getCurrentWeekExpenses() {
+        long[] range = getCurrentWeekRange();
+        return getExpensesByRange(range[0], range[1]);
+    }
+
+    private long[] getCurrentWeekRange() {
+        Calendar cal = Calendar.getInstance();
+        // Sunday as first day
+        cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        long start = cal.getTimeInMillis();
+
+        cal.add(Calendar.DAY_OF_YEAR, 6);
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        long end = cal.getTimeInMillis();
+
+        return new long[]{start, end};
+    }
+
+    // ═══════════════════════════════════════════════════════════
+// YEARLY TOTALS — current year
+// ═══════════════════════════════════════════════════════════
+    public double getCurrentYearTotalIncome() {
+        long[] range = getCurrentYearRange();
+        return getTypeTotalInRange("income", range[0], range[1]);
+    }
+
+    public double getCurrentYearTotalExpense() {
+        long[] range = getCurrentYearRange();
+        return getTypeTotalInRange("expense", range[0], range[1]);
+    }
+
+    public List<Expense> getCurrentYearExpenses() {
+        long[] range = getCurrentYearRange();
+        return getExpensesByRange(range[0], range[1]);
+    }
+
+    private long[] getCurrentYearRange() {
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.DAY_OF_YEAR, 1);
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        long start = cal.getTimeInMillis();
+
+        cal.set(Calendar.DAY_OF_YEAR, cal.getActualMaximum(Calendar.DAY_OF_YEAR));
+        cal.set(Calendar.HOUR_OF_DAY, 23);
+        cal.set(Calendar.MINUTE, 59);
+        cal.set(Calendar.SECOND, 59);
+        long end = cal.getTimeInMillis();
+
+        return new long[]{start, end};
+    }
+
+    // ═══════════════════════════════════════════════════════════
+// GENERIC RANGE HELPER
+// ═══════════════════════════════════════════════════════════
+    private double getTypeTotalInRange(String type, long start, long end) {
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.query(TABLE_EXPENSE,
+                new String[]{"SUM(" + COL_AMOUNT + ")"},
+                COL_TYPE + "=? AND " + COL_DATE + " BETWEEN ? AND ?",
+                new String[]{type, String.valueOf(start), String.valueOf(end)},
+                null, null, null);
+        double total = 0;
+        if (cursor != null && cursor.moveToFirst()) {
+            total = cursor.getDouble(0);
+            cursor.close();
+        }
+        db.close();
+        return total;
     }
 }
