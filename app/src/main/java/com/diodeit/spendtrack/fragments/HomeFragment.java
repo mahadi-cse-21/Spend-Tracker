@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -87,7 +88,6 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupClickListeners(View view) {
-
         view.findViewById(R.id.btn_add_expense).setOnClickListener(v ->
                 ((MainActivity) requireActivity()).navigateToTab("ADD"));
 
@@ -115,9 +115,11 @@ public class HomeFragment extends Fragment {
         if (!isAdded()) return;
 
         Calendar cal = Calendar.getInstance();
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH);
         int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
 
-        // ★ All-time totals (since first use)
+        // All-time totals
         double income   = dbHelper.getTotalIncomeAllTime();
         double expense  = dbHelper.getTotalExpenseAllTime();
         double balance  = income - expense;
@@ -125,7 +127,7 @@ public class HomeFragment extends Fragment {
 
         // Balance (big number)
         tvRemainingBudget.setText(bnConverter.toBengali(
-                String.format(Locale.US, "%,.0f", balance)));
+                String.format(Locale.US, "%,.0f", Math.max(balance, 0))));
 
         // Income | Expense labels
         tvSpentLabel.setText("আয়: ৳" + bnConverter.toBengali(
@@ -140,18 +142,27 @@ public class HomeFragment extends Fragment {
         // Daily average
         tvDailyAverage.setText(bnConverter.formatCurrency(dailyAvg));
 
-        // Progress = expense / income (all-time)
-        int progress = income > 0 ? (int) ((expense / income) * 100) : 0;
-        budgetProgress.setProgress(Math.min(progress, 100));
+        // Progress = expense / income (all-time), clamped
+        int progress = income > 0
+                ? (int) Math.min((expense / income) * 100, 100)
+                : 0;
+        budgetProgress.setProgress(progress);
         tvBudgetUsed.setText(bnConverter.toBengali(progress) + "% ব্যয় হয়েছে");
 
-        // Pace indicator
-        if (income > 0 && expense > income * 0.8) {
+        // Spending pace — uses CURRENT MONTH totals
+        double monthIncome  = dbHelper.getMonthIncome(year, month);
+        double monthExpense = dbHelper.getMonthExpense(year, month);
+
+        if (monthIncome > 0 && monthExpense > monthIncome * 0.8) {
             tvSpendingPace.setText("সতর্কতা");
             tvSpendingPace.setBackgroundResource(R.drawable.bg_pill_error);
+            tvSpendingPace.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.on_error));
         } else {
             tvSpendingPace.setText("স্বাভাবিক");
             tvSpendingPace.setBackgroundResource(R.drawable.bg_pill_primary_fixed);
+            tvSpendingPace.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.on_primary_fixed));
         }
 
         // Today's list

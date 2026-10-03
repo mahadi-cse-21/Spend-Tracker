@@ -675,4 +675,46 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return total;
     }
+    public double getMonthIncome(int year, int month) {
+        Calendar c = Calendar.getInstance();
+        c.set(year, month, 1, 0, 0, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        long start = c.getTimeInMillis();
+
+        c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
+        c.set(Calendar.MILLISECOND, 999);
+        long end = c.getTimeInMillis();
+
+        return getTotalByTypeInRange("income", start, end);
+    }
+
+    public double getMonthExpense(int year, int month) {
+        Calendar c = Calendar.getInstance();
+        c.set(year, month, 1, 0, 0, 0);
+        c.set(Calendar.MILLISECOND, 0);
+        long start = c.getTimeInMillis();
+
+        c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
+        c.set(Calendar.HOUR_OF_DAY, 23);
+        c.set(Calendar.MINUTE, 59);
+        c.set(Calendar.SECOND, 59);
+        c.set(Calendar.MILLISECOND, 999);
+        long end = c.getTimeInMillis();
+
+        return getTotalByTypeInRange("expense", start, end);
+    }
+
+    private double getTotalByTypeInRange(String type, long start, long end) {
+        double total = 0;
+        android.database.Cursor c = getReadableDatabase().rawQuery(
+                "SELECT IFNULL(SUM(amount), 0) FROM expenses " +
+                        "WHERE date BETWEEN ? AND ? AND type = ?",
+                new String[]{ String.valueOf(start), String.valueOf(end), type });
+        if (c.moveToFirst()) total = c.getDouble(0);
+        c.close();
+        return total;
+    }
 }

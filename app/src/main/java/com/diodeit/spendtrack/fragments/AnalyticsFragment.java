@@ -129,7 +129,7 @@ public class AnalyticsFragment extends Fragment {
     }
 
     // ═══════════════════════════════════════════════════════════
-    // PERIOD SELECTOR (week / month / year)
+    // PERIOD SELECTOR
     // ═══════════════════════════════════════════════════════════
     private void setupPeriodSelector() {
         btnPrevPeriod.setOnClickListener(v -> {
@@ -228,7 +228,7 @@ public class AnalyticsFragment extends Fragment {
         String daysLeftText;
 
         switch (currentPeriod) {
-            case 0: { // Weekly
+            case 0: {
                 long[] range = getWeekRange(selectedCal);
                 income  = getTypeTotalInRange("income", range[0], range[1]);
                 expense = getTypeTotalInRange("expense", range[0], range[1]);
@@ -238,8 +238,7 @@ public class AnalyticsFragment extends Fragment {
                 daysLeftText = getDaysLeftTextForWeek(selectedCal);
                 break;
             }
-
-            case 2: { // Yearly
+            case 2: {
                 income  = getYearIncome(year);
                 expense = getYearExpense(year);
                 periodExpenses = getYearExpenses(year);
@@ -248,8 +247,7 @@ public class AnalyticsFragment extends Fragment {
                 daysLeftText = getDaysLeftTextForYear(selectedCal);
                 break;
             }
-
-            default: { // Monthly
+            default: {
                 income  = getMonthIncome(year, month);
                 expense = getMonthExpense(year, month);
                 periodExpenses = dbHelper.getMonthExpenses(year, month);
@@ -266,9 +264,8 @@ public class AnalyticsFragment extends Fragment {
         String incomeStr  = bnConverter.toBengali(String.format(Locale.US, "%,.0f", income));
         String expenseStr = bnConverter.toBengali(String.format(Locale.US, "%,.0f", expense));
 
-        // ─── Hero number: NEVER show a minus sign ─────────────
+        // Hero number: NEVER show a minus sign
         if (income <= 0) {
-            // No income set → show total expense as hero
             tvMonthlyTotal.setText("৳ " + expenseStr);
             tvMonthlyTotal.setTextColor(ContextCompat.getColor(requireContext(), R.color.error));
             tvTotalBudgetLabel.setText("মোট ব্যয়");
@@ -287,16 +284,22 @@ public class AnalyticsFragment extends Fragment {
             }
         }
 
-        // Sub-label under the title
         tvBudgetAmountLabel.setText(periodLabel);
 
-        // ─── Percent badge ────────────────────────────────────
-        int percent = income > 0
-                ? (int) Math.min((expense / income) * 100, 100)
-                : (expense > 0 ? 100 : 0);
+        // Percent badge
+        int percent;
+        if (income > 0) {
+            percent = (int) Math.min((expense / income) * 100, 100);
+            tvUsedPercent.setText("ব্যয় " + bnConverter.toBengali(percent) + "%");
+        } else if (expense > 0) {
+            percent = 100;
+            tvUsedPercent.setText("ব্যয় ১০০%");
+        } else {
+            percent = 0;
+            tvUsedPercent.setText("ব্যয় —");
+        }
 
         progressOverall.setProgressCompat(percent, true);
-        tvUsedPercent.setText("ব্যয় " + bnConverter.toBengali(percent) + "%");
 
         if (percent >= 80) {
             tvUsedPercent.setTextColor(
@@ -308,7 +311,7 @@ public class AnalyticsFragment extends Fragment {
                     ContextCompat.getColor(requireContext(), R.color.on_surface_variant));
         }
 
-        // ─── 3 stat pills ─────────────────────────────────────
+        // 3 stat pills
         tvIncomeStat.setText("৳ " + incomeStr);
         tvExpenseStat.setText("৳ " + expenseStr);
 
@@ -316,13 +319,8 @@ public class AnalyticsFragment extends Fragment {
                 String.format(Locale.US, "%,.0f", Math.max(balance, 0)));
         tvRemainingStat.setText("৳ " + remainingStr);
 
-        // Bottom-left of progress bar = remaining balance
         tvRemainingFund.setText("অবশিষ্ট: ৳" + remainingStr);
-
-        // Bottom-right of progress bar = days left in period
         tvDaysLeft.setText(daysLeftText);
-
-        // Chart month label
         tvChartMonth.setText(periodShortLabel + " রিপোর্ট");
 
         loadCategoryBreakdown(periodExpenses);
@@ -376,7 +374,6 @@ public class AnalyticsFragment extends Fragment {
         return new long[]{start.getTimeInMillis(), end.getTimeInMillis()};
     }
 
-    // ─── Start / end of today ─────────────────────────────────
     private long startOfToday() {
         Calendar c = Calendar.getInstance();
         c.set(Calendar.HOUR_OF_DAY, 0);
@@ -395,20 +392,14 @@ public class AnalyticsFragment extends Fragment {
         return c.getTimeInMillis();
     }
 
-    // ─── Days-left helpers (respect past / current / future) ─
+    // ─── Days-left helpers ────────────────────────────────────
     private String getDaysLeftTextForWeek(Calendar anchor) {
         long[] range = getWeekRange(anchor);
         long todayEnd = endOfToday();
 
-        if (todayEnd < range[0]) {
-            // Week is in the future
-            return "৭ দিনের সপ্তাহ";
-        }
-        if (todayEnd > range[1]) {
-            // Week already finished
-            return "সম্পূর্ণ সপ্তাহ";
-        }
-        // Current week → count days including today
+        if (todayEnd < range[0]) return "৭ দিনের সপ্তাহ";
+        if (todayEnd > range[1]) return "সম্পূর্ণ সপ্তাহ";
+
         long diffMs = range[1] - startOfToday();
         int daysLeft = (int) (diffMs / (24L * 60 * 60 * 1000)) + 1;
         if (daysLeft < 0) daysLeft = 0;
@@ -427,9 +418,8 @@ public class AnalyticsFragment extends Fragment {
             int days = c.getActualMaximum(Calendar.DAY_OF_MONTH);
             return bnConverter.toBengali(days) + " দিনের মাস";
         }
-        if (todayEnd > range[1]) {
-            return "সম্পূর্ণ মাস";
-        }
+        if (todayEnd > range[1]) return "সম্পূর্ণ মাস";
+
         Calendar now = Calendar.getInstance();
         int daysInMonth = now.getActualMaximum(Calendar.DAY_OF_MONTH);
         int daysLeft = daysInMonth - now.get(Calendar.DAY_OF_MONTH) + 1;
@@ -443,11 +433,13 @@ public class AnalyticsFragment extends Fragment {
         long todayEnd = endOfToday();
 
         if (todayEnd < range[0]) {
-            return "সম্পূর্ণ বছর";
+            Calendar c = Calendar.getInstance();
+            c.set(year, Calendar.JANUARY, 1);
+            int days = c.getActualMaximum(Calendar.DAY_OF_YEAR);
+            return bnConverter.toBengali(days) + " দিনের বছর";
         }
-        if (todayEnd > range[1]) {
-            return "সম্পূর্ণ বছর";
-        }
+        if (todayEnd > range[1]) return "সম্পূর্ণ বছর";
+
         Calendar now = Calendar.getInstance();
         int totalDays = now.getActualMaximum(Calendar.DAY_OF_YEAR);
         int daysLeft = totalDays - now.get(Calendar.DAY_OF_YEAR) + 1;
@@ -479,24 +471,19 @@ public class AnalyticsFragment extends Fragment {
     }
 
     private double getYearIncome(int year) {
-        double total = 0;
-        for (int m = 0; m < 12; m++) total += getMonthIncome(year, m);
-        return total;
+        long[] r = getYearRange(year);
+        return getTypeTotalInRange("income", r[0], r[1]);
     }
 
     private double getYearExpense(int year) {
-        double total = 0;
-        for (int m = 0; m < 12; m++) total += getMonthExpense(year, m);
-        return total;
+        long[] r = getYearRange(year);
+        return getTypeTotalInRange("expense", r[0], r[1]);
     }
 
     private List<Expense> getYearExpenses(int year) {
-        List<Expense> all = new ArrayList<>();
-        for (int m = 0; m < 12; m++) {
-            List<Expense> monthExp = dbHelper.getMonthExpenses(year, m);
-            if (monthExp != null) all.addAll(monthExp);
-        }
-        return all;
+        long[] range = getYearRange(year);
+        List<Expense> all = dbHelper.getExpensesByRange(range[0], range[1]);
+        return all != null ? all : new ArrayList<>();
     }
 
     // ─────────────────────────────────────────────────────────
@@ -587,6 +574,17 @@ public class AnalyticsFragment extends Fragment {
         float[] values = new float[bucketCount];
         double total = 0;
 
+        long weekStartMs = 0;
+        if (currentPeriod == 0) {
+            Calendar ws = (Calendar) selectedCal.clone();
+            ws.set(Calendar.DAY_OF_WEEK, ws.getFirstDayOfWeek());
+            ws.set(Calendar.HOUR_OF_DAY, 0);
+            ws.set(Calendar.MINUTE, 0);
+            ws.set(Calendar.SECOND, 0);
+            ws.set(Calendar.MILLISECOND, 0);
+            weekStartMs = ws.getTimeInMillis();
+        }
+
         Calendar cal = Calendar.getInstance();
         for (Expense e : expenses) {
             if (e == null) continue;
@@ -595,7 +593,8 @@ public class AnalyticsFragment extends Fragment {
             cal.setTimeInMillis(e.getDate());
             int bucket;
             if (currentPeriod == 0) {
-                bucket = cal.get(Calendar.DAY_OF_WEEK) - 1;
+                long diff = cal.getTimeInMillis() - weekStartMs;
+                bucket = (int) (diff / (24L * 60 * 60 * 1000));
             } else if (currentPeriod == 2) {
                 bucket = cal.get(Calendar.MONTH);
             } else {
@@ -640,9 +639,17 @@ public class AnalyticsFragment extends Fragment {
     }
 
     private String maxDayLabel(float[] values) {
-        String[] days = { "রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি" };
+        Calendar ws = (Calendar) selectedCal.clone();
+        ws.set(Calendar.DAY_OF_WEEK, ws.getFirstDayOfWeek());
+
+        String[] dayNames = { "রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি" };
         int idx = indexOfMax(values);
-        return (idx >= 0 && idx < days.length) ? days[idx] : "-";
+        if (idx < 0 || idx > 6) return "-";
+
+        Calendar d = (Calendar) ws.clone();
+        d.add(Calendar.DAY_OF_YEAR, idx);
+        int dow = d.get(Calendar.DAY_OF_WEEK) - 1;
+        return dayNames[dow];
     }
 
     private String maxMonthLabel(float[] values) {
@@ -665,6 +672,18 @@ public class AnalyticsFragment extends Fragment {
 
         List<CategoryBudget> budgets = dbHelper.getCategoryBudgets(monthKey);
         if (budgets == null) budgets = new ArrayList<>();
+
+        View sectionHeader = getView() != null
+                ? getView().findViewById(R.id.tv_budget_health_header)
+                : null;
+
+        if (budgets.isEmpty()) {
+            if (sectionHeader != null) sectionHeader.setVisibility(View.GONE);
+            llBudgetHealth.setVisibility(View.GONE);
+            return;
+        }
+        llBudgetHealth.setVisibility(View.VISIBLE);
+        if (sectionHeader != null) sectionHeader.setVisibility(View.VISIBLE);
 
         LayoutInflater inflater = LayoutInflater.from(requireContext());
 
