@@ -16,8 +16,7 @@ public class CategoryUtils {
         // Any income category → default to payments icon
         if (category.contains("বেতন") || category.contains("আয়") ||
                 category.contains("বোনাস") || category.contains("ফ্রিল্যান্স") ||
-                category.contains("ব্যবসা") || category.contains("উপর") ||
-                category.contains("সুদ")) {
+                category.contains("ব্যবসা") || category.contains("উপর")) {
             return R.drawable.ic_payments;
         }
         return R.drawable.ic_category;

@@ -248,7 +248,7 @@ public class AddExpenseFragment extends Fragment {
                     new Category("ফ্রিল্যান্স", "ফ্রিল্যান্স", "💻"),
                     new Category("ব্যবসা", "ব্যবসা", "🏢"),
                     new Category("উপহার", "উপহার", "🎀"),
-                    new Category("সুদ", "সুদ", "💰"),
+
                     new Category("ভাড়া আয়", "ভাড়া", "🏘️"),
                     new Category("অন্যান্য আয়", "অন্যান্য", "⚙️")
             };
