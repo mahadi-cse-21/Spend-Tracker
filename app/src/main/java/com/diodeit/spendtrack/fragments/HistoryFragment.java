@@ -24,7 +24,7 @@ import com.google.android.material.chip.ChipGroup;
 
 import com.diodeit.spendtrack.MainActivity;
 import com.diodeit.spendtrack.R;
-import com.diodeit.spendtrack.adapters.TransactionHistoryAdapter;
+import com.diodeit.spendtrack.adapters.TransactionGroupAdapter;
 import com.diodeit.spendtrack.databases.DatabaseHelper;
 import com.diodeit.spendtrack.models.Expense;
 import com.diodeit.spendtrack.utils.BengaliNumberConverter;
@@ -45,7 +45,9 @@ public class HistoryFragment extends Fragment {
     private LinearLayout llEmptyState;
     private RecyclerView rvTransactions;
 
-    private TransactionHistoryAdapter adapter;
+    // ★ নতুন গ্রুপ অ্যাডাপ্টার — উপরে তারিখ, নিচে লেনদেন
+    private TransactionGroupAdapter adapter;
+
     private DatabaseHelper dbHelper;
     private BengaliNumberConverter bnConverter;
 
@@ -91,7 +93,8 @@ public class HistoryFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        adapter = new TransactionHistoryAdapter(requireContext(), new ArrayList<>(), expense -> {
+        // ★ TransactionGroupAdapter — তারিখ হেডার + লেনদেন একসাথে দেখাবে
+        adapter = new TransactionGroupAdapter(requireContext(), expense -> {
             ((MainActivity) requireActivity()).openDetailFragment(
                     TransactionDetailFragment.newInstance(expense.getId()),
                     "TRANSACTION_DETAIL");
@@ -105,8 +108,7 @@ public class HistoryFragment extends Fragment {
                 getString(R.string.all_categories),
                 "খরচ",
                 "আয়",
-                getString(R.string.pay_bkash_short),
-                getString(R.string.pay_nagad_short),
+                "ঋণ",
                 getString(R.string.pay_cash_short)
         };
         for (String filter : filters) {
@@ -152,11 +154,13 @@ public class HistoryFragment extends Fragment {
         double income = 0, expense = 0;
 
         for (Expense e : allExpenses) {
+            String cat = e.getCategory() != null ? e.getCategory() : "";
             String summary = e.getItemsSummary() != null ? e.getItemsSummary() : "";
             String note = e.getNote() != null ? e.getNote() : "";
+            String pay = e.getPaymentMethod() != null ? e.getPaymentMethod() : "";
 
             boolean matchesQuery =
-                    e.getCategory().toLowerCase().contains(query) ||
+                    cat.toLowerCase().contains(query) ||
                             summary.toLowerCase().contains(query) ||
                             note.toLowerCase().contains(query);
 
@@ -167,9 +171,10 @@ public class HistoryFragment extends Fragment {
                 matchesFilter = !e.isIncome();
             } else if (selectedFilter.equals("আয়")) {
                 matchesFilter = e.isIncome();
+            } else if (selectedFilter.equals("ঋণ")) {
+                matchesFilter = cat.equals("ঋণ") || cat.equals("ঋণ পরিশোধ");
             } else {
-                matchesFilter = e.getCategory().contains(selectedFilter)
-                        || e.getPaymentMethod().contains(selectedFilter);
+                matchesFilter = cat.contains(selectedFilter) || pay.contains(selectedFilter);
             }
 
             if (matchesQuery && matchesFilter) {
@@ -179,7 +184,9 @@ public class HistoryFragment extends Fragment {
             }
         }
 
-        adapter.updateData(filteredExpenses);
+        // ★ গ্রুপ অ্যাডাপ্টারে পাঠাই — তারিখ হেডার সহ
+        adapter.setExpenses(filteredExpenses);
+
         tvTotalExpense.setText(
                 "আয় " + bnConverter.formatCurrency(income)
                         + "  |  ব্যয় " + bnConverter.formatCurrency(expense));
@@ -206,7 +213,7 @@ public class HistoryFragment extends Fragment {
     }
 
     // ═══════════════════════════════════════════════════════════
-    // EXPORT SHEET — now actually exports
+    // EXPORT SHEET
     // ═══════════════════════════════════════════════════════════
     private void showExportSheet() {
         View sheetView = getLayoutInflater().inflate(R.layout.dialog_export, null);
@@ -215,7 +222,7 @@ public class HistoryFragment extends Fragment {
 
         sheetView.findViewById(R.id.btn_close_export).setOnClickListener(v -> dialog.dismiss());
 
-        // ─── PDF EXPORT — exports the currently visible (filtered) list ───
+        // ─── PDF EXPORT ───
         sheetView.findViewById(R.id.btn_export_pdf).setOnClickListener(v -> {
             if (filteredExpenses == null || filteredExpenses.isEmpty()) {
                 Toast.makeText(requireContext(),
@@ -223,7 +230,6 @@ public class HistoryFragment extends Fragment {
                 return;
             }
 
-            // Sum up the filtered set
             double income = 0, expense = 0;
             for (Expense e : filteredExpenses) {
                 if (e.isIncome()) income += e.getAmount();
@@ -246,7 +252,7 @@ public class HistoryFragment extends Fragment {
             if (ok) dialog.dismiss();
         });
 
-        // ─── CSV EXPORT — exports the currently visible (filtered) list ───
+        // ─── CSV EXPORT ───
         sheetView.findViewById(R.id.btn_export_csv).setOnClickListener(v -> {
             if (filteredExpenses == null || filteredExpenses.isEmpty()) {
                 Toast.makeText(requireContext(),

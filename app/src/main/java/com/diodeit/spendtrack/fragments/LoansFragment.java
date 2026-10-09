@@ -20,6 +20,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.diodeit.spendtrack.R;
 import com.diodeit.spendtrack.adapters.LoanAdapter;
 import com.diodeit.spendtrack.databases.DatabaseHelper;
+import com.diodeit.spendtrack.models.Expense;
+import com.diodeit.spendtrack.models.ExpenseItem;
 import com.diodeit.spendtrack.models.Loan;
 import com.diodeit.spendtrack.utils.BengaliNumberConverter;
 import com.google.android.material.button.MaterialButton;
@@ -127,8 +129,6 @@ public class LoansFragment extends Fragment {
             etAmount.setText(String.format(Locale.US, "%.0f", existing.getPrincipalAmount()));
             etNote.setText(existing.getNote());
 
-            // 🔒 Lock the amount when editing — changing it would
-            //    silently break the loan/repayment history.
             etAmount.setEnabled(false);
             etAmount.setAlpha(0.6f);
         }
@@ -166,20 +166,44 @@ public class LoansFragment extends Fragment {
                     loan.setPrincipalAmount(amount);
                     loan.setNote(note);
 
-                    if (!editing) {
-                        loan.setDate(System.currentTimeMillis());
-                        loan.setPaidAmount(0);
-                        loan.setClosed(false);
-                    }
-
-                    // ✅ Loan lives ONLY in the loans table.
-                    //    Nothing is written to the expenses table.
                     if (editing) {
+                        // ─── Edit mode ───
                         db.updateLoan(loan);
                         Toast.makeText(requireContext(),
                                 "আপডেট হয়েছে", Toast.LENGTH_SHORT).show();
                     } else {
-                        db.addLoan(loan);
+                        // ─── New loan ───
+                        loan.setDate(System.currentTimeMillis());
+                        loan.setPaidAmount(0);
+                        loan.setClosed(false);
+
+                        long loanId = db.addLoan(loan);
+                        loan.setId(loanId);
+
+                        // ★ শুধু "আমি ঋণ দিয়েছি" হলে টাকা কমবে → Expense তৈরি
+                        //   "আমি ঋণ নিয়েছি" হলে কিছুই হবে না
+                        if (loan.isGiven()) {
+                            Expense ledger = new Expense();
+                            ledger.setAmount(loan.getPrincipalAmount());
+                            ledger.setCategory("ঋণ");
+                            ledger.setPaymentMethod("ক্যাশ");
+                            ledger.setDate(loan.getDate());
+                            ledger.setType("expense");
+
+                            String action = "ঋণ দিয়েছি — " + loan.getPersonName();
+                            ledger.setNote(action);
+
+                            List<ExpenseItem> items = new ArrayList<>();
+                            items.add(new ExpenseItem(action, loan.getPrincipalAmount()));
+                            ledger.setItems(items);
+
+                            long expId = db.addExpense(ledger);
+
+                            // link সেভ
+                            loan.setLinkedExpenseId(expId);
+                            db.updateLoan(loan);
+                        }
+
                         Toast.makeText(requireContext(),
                                 "ঋণ যোগ করা হয়েছে", Toast.LENGTH_SHORT).show();
                     }
@@ -241,10 +265,28 @@ public class LoansFragment extends Fragment {
                     loan.setPaidAmount(newPaid);
                     loan.setClosed(newPaid >= loan.getPrincipalAmount());
 
-                    // ✅ Update ONLY the loan record.
-                    //    No expense/income is created — this avoids
-                    //    double-counting with the original expense.
+                    // ★ Loan আপডেট
                     db.updateLoan(loan);
+
+                    // ★ শুধু "আমি ঋণ দিয়েছি" হলে ফেরত পেলে টাকা বাড়বে → Income তৈরি
+                    //   "আমি ঋণ নিয়েছি" হলে পরিশোধ করলেও কিছুই হবে না
+                    if (loan.isGiven()) {
+                        Expense payment = new Expense();
+                        payment.setAmount(pay);
+                        payment.setCategory("ঋণ পরিশোধ");
+                        payment.setPaymentMethod("ক্যাশ");
+                        payment.setDate(System.currentTimeMillis());
+                        payment.setType("income");
+
+                        String action = "ঋণ ফেরত পেয়েছি — " + loan.getPersonName();
+                        payment.setNote(action);
+
+                        List<ExpenseItem> items = new ArrayList<>();
+                        items.add(new ExpenseItem(action, pay));
+                        payment.setItems(items);
+
+                        db.addExpense(payment);
+                    }
 
                     loadLoans();
                     Toast.makeText(requireContext(),
@@ -258,9 +300,13 @@ public class LoansFragment extends Fragment {
     // DELETE
     // ═══════════════════════════════════════════════════════
     private void confirmDelete(Loan loan) {
+        String msg = loan.isGiven()
+                ? loan.getPersonName() + " এর ঋণ মুছে ফেলতে চান?\n\nএটি সংশ্লিষ্ট সব খরচ/আয়ের হিসাবও মুছে ফেলবে।"
+                : loan.getPersonName() + " এর ঋণ মুছে ফেলতে চান?";
+
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("ঋণ মুছুন")
-                .setMessage(loan.getPersonName() + " এর ঋণ মুছে ফেলতে চান?")
+                .setMessage(msg)
                 .setPositiveButton("মুছে ফেলুন", (d, w) -> {
                     db.deleteLoan(loan.getId());
                     loadLoans();
