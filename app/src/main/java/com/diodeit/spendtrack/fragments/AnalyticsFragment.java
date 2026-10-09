@@ -38,7 +38,6 @@ import java.util.Map;
 
 public class AnalyticsFragment extends Fragment {
 
-    // ─── Views ────────────────────────────────────────────────
     private TextView tvMonthlyTotal, tvRemainingFund, tvDaysLeft, tvUsedPercent;
     private TextView tvIncomeStat, tvExpenseStat, tvRemainingStat;
     private TextView tvHighestPercent, tvHighestCategory, tvAvgDaily, tvMaxExpense, tvChartMonth;
@@ -54,14 +53,10 @@ public class AnalyticsFragment extends Fragment {
     private LinearLayout llLegend, llBudgetHealth;
     private MaterialButton btnPdfExport, btnCsvExport;
 
-    // ─── Helpers / state ──────────────────────────────────────
     private BengaliNumberConverter bnConverter;
     private DatabaseHelper dbHelper;
 
-    /** 0 = Weekly, 1 = Monthly, 2 = Yearly */
     private int currentPeriod = 1;
-
-    /** Anchor calendar for the currently selected period. */
     private final Calendar selectedCal = Calendar.getInstance();
 
     private final int[] chartColors = {
@@ -70,9 +65,6 @@ public class AnalyticsFragment extends Fragment {
             0xFF6750A4, 0xFF964B00
     };
 
-    // ──────────────────────────────────────────────────────────
-    // Lifecycle
-    // ──────────────────────────────────────────────────────────
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -128,9 +120,6 @@ public class AnalyticsFragment extends Fragment {
         btnCsvExport    = view.findViewById(R.id.btn_csv_export);
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // PERIOD SELECTOR
-    // ═══════════════════════════════════════════════════════════
     private void setupPeriodSelector() {
         btnPrevPeriod.setOnClickListener(v -> {
             switch (currentPeriod) {
@@ -195,9 +184,6 @@ public class AnalyticsFragment extends Fragment {
         }
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // TABS
-    // ═══════════════════════════════════════════════════════════
     private void setupTabListener() {
         if (tabPeriod == null) return;
         tabPeriod.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
@@ -214,9 +200,6 @@ public class AnalyticsFragment extends Fragment {
         if (defaultTab != null) defaultTab.select();
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // LOAD DATA
-    // ═══════════════════════════════════════════════════════════
     private void loadData() {
         int year  = selectedCal.get(Calendar.YEAR);
         int month = selectedCal.get(Calendar.MONTH);
@@ -264,7 +247,6 @@ public class AnalyticsFragment extends Fragment {
         String incomeStr  = bnConverter.toBengali(String.format(Locale.US, "%,.0f", income));
         String expenseStr = bnConverter.toBengali(String.format(Locale.US, "%,.0f", expense));
 
-        // Hero number: NEVER show a minus sign
         if (income <= 0) {
             tvMonthlyTotal.setText("৳ " + expenseStr);
             tvMonthlyTotal.setTextColor(ContextCompat.getColor(requireContext(), R.color.error));
@@ -286,7 +268,6 @@ public class AnalyticsFragment extends Fragment {
 
         tvBudgetAmountLabel.setText(periodLabel);
 
-        // Percent badge
         int percent;
         if (income > 0) {
             percent = (int) Math.min((expense / income) * 100, 100);
@@ -311,7 +292,6 @@ public class AnalyticsFragment extends Fragment {
                     ContextCompat.getColor(requireContext(), R.color.on_surface_variant));
         }
 
-        // 3 stat pills
         tvIncomeStat.setText("৳ " + incomeStr);
         tvExpenseStat.setText("৳ " + expenseStr);
 
@@ -328,7 +308,6 @@ public class AnalyticsFragment extends Fragment {
         loadBudgetHealth();
     }
 
-    // ─── Ranges ───────────────────────────────────────────────
     private long[] getWeekRange(Calendar anchor) {
         Calendar start = (Calendar) anchor.clone();
         start.set(Calendar.DAY_OF_WEEK, start.getFirstDayOfWeek());
@@ -392,7 +371,6 @@ public class AnalyticsFragment extends Fragment {
         return c.getTimeInMillis();
     }
 
-    // ─── Days-left helpers ────────────────────────────────────
     private String getDaysLeftTextForWeek(Calendar anchor) {
         long[] range = getWeekRange(anchor);
         long todayEnd = endOfToday();
@@ -447,7 +425,6 @@ public class AnalyticsFragment extends Fragment {
         return "আর " + bnConverter.toBengali(daysLeft) + " দিন বাকি";
     }
 
-    // ─── Totals ───────────────────────────────────────────────
     private double getTypeTotalInRange(String type, long start, long end) {
         List<Expense> list = dbHelper.getExpensesByRange(start, end);
         double total = 0;
@@ -486,9 +463,6 @@ public class AnalyticsFragment extends Fragment {
         return all != null ? all : new ArrayList<>();
     }
 
-    // ─────────────────────────────────────────────────────────
-    // DONUT
-    // ─────────────────────────────────────────────────────────
     private void loadCategoryBreakdown(List<Expense> expenses) {
         if (expenses == null) expenses = new ArrayList<>();
 
@@ -564,9 +538,6 @@ public class AnalyticsFragment extends Fragment {
         }
     }
 
-    // ─────────────────────────────────────────────────────────
-    // BAR CHART
-    // ─────────────────────────────────────────────────────────
     private void loadTrendChart(List<Expense> expenses) {
         if (expenses == null) expenses = new ArrayList<>();
 
@@ -661,9 +632,6 @@ public class AnalyticsFragment extends Fragment {
         return (idx >= 0 && idx < months.length) ? months[idx] : "-";
     }
 
-    // ─────────────────────────────────────────────────────────
-    // BUDGET HEALTH
-    // ─────────────────────────────────────────────────────────
     private void loadBudgetHealth() {
         llBudgetHealth.removeAllViews();
 
@@ -732,9 +700,6 @@ public class AnalyticsFragment extends Fragment {
         }
     }
 
-    // ─────────────────────────────────────────────────────────
-    // EXPORT
-    // ─────────────────────────────────────────────────────────
     private void setupClickListeners() {
         btnPdfExport.setOnClickListener(v -> {
             int year  = selectedCal.get(Calendar.YEAR);

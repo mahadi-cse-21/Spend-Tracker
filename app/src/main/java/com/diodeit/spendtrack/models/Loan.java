@@ -27,6 +27,9 @@ public class Loan {
     /** সম্পূর্ণ পরিশোধিত কি না */
     private boolean closed = false;
 
+    /** ★ Principal যুক্ত transaction (Expense/Income) এর ID */
+    private long linkedExpenseId = -1;
+
     // ─────────────────────────────────────────────
 
     public long getId() { return id; }
@@ -56,17 +59,18 @@ public class Loan {
     public boolean isClosed() { return closed; }
     public void setClosed(boolean closed) { this.closed = closed; }
 
+    public long getLinkedExpenseId() { return linkedExpenseId; }
+    public void setLinkedExpenseId(long linkedExpenseId) { this.linkedExpenseId = linkedExpenseId; }
+
     // ── Helpers ────────────────────────────────────
 
     public boolean isTaken()   { return "taken".equals(type); }
     public boolean isGiven()   { return "given".equals(type); }
 
-    /** বাকি থাকা পরিমাণ */
     public double getRemaining() {
         return Math.max(0, principalAmount - paidAmount);
     }
 
-    /** শতকরা হিসাবে কত পরিশোধ হয়েছে (০-১০০) */
     public int getProgressPercent() {
         if (principalAmount <= 0) return 0;
         int p = (int) ((paidAmount / principalAmount) * 100);

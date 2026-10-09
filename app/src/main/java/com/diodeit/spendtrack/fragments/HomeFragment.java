@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.diodeit.spendtrack.MainActivity;
 import com.diodeit.spendtrack.R;
 import com.diodeit.spendtrack.adapters.ExpenseAdapter;
+import com.diodeit.spendtrack.adapters.TransactionGroupAdapter;
 import com.diodeit.spendtrack.databases.DatabaseHelper;
 import com.diodeit.spendtrack.models.Expense;
 import com.diodeit.spendtrack.utils.BengaliNumberConverter;
@@ -33,7 +34,12 @@ public class HomeFragment extends Fragment {
     private LinearProgressIndicator budgetProgress;
     private RecyclerView rvTodayExpenses, rvRecentTransactions;
 
-    private ExpenseAdapter todayAdapter, recentAdapter;
+    // ★ Today → সাধারণ ExpenseAdapter (হেডার ছাড়া, কারণ সবই আজকের)
+    private ExpenseAdapter todayAdapter;
+
+    // ★ Recent → গ্রুপ অ্যাডাপ্টার (তারিখ হেডার সহ)
+    private TransactionGroupAdapter recentAdapter;
+
     private DatabaseHelper dbHelper;
     private BengaliNumberConverter bnConverter;
 
@@ -71,18 +77,21 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupRecyclerViews() {
+        // ── Today's list — সাধারণ অ্যাডাপ্টার ──
         todayAdapter = new ExpenseAdapter(requireContext(), new ArrayList<>(), expense -> {
-            ((MainActivity) requireActivity()).openDetailFragment(
-                    TransactionDetailFragment.newInstance(expense.getId()),
-                    "TRANSACTION_DETAIL");
-        });
-        recentAdapter = new ExpenseAdapter(requireContext(), new ArrayList<>(), expense -> {
             ((MainActivity) requireActivity()).openDetailFragment(
                     TransactionDetailFragment.newInstance(expense.getId()),
                     "TRANSACTION_DETAIL");
         });
         rvTodayExpenses.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvTodayExpenses.setAdapter(todayAdapter);
+
+        // ── Recent list — তারিখ-গ্রুপ অ্যাডাপ্টার ──
+        recentAdapter = new TransactionGroupAdapter(requireContext(), expense -> {
+            ((MainActivity) requireActivity()).openDetailFragment(
+                    TransactionDetailFragment.newInstance(expense.getId()),
+                    "TRANSACTION_DETAIL");
+        });
         rvRecentTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvRecentTransactions.setAdapter(recentAdapter);
     }
@@ -119,37 +128,32 @@ public class HomeFragment extends Fragment {
         int month = cal.get(Calendar.MONTH);
         int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
 
-        // All-time totals
+        // ─── All-time totals ───
         double income   = dbHelper.getTotalIncomeAllTime();
         double expense  = dbHelper.getTotalExpenseAllTime();
         double balance  = income - expense;
         double dailyAvg = expense / Math.max(1, dayOfMonth);
 
-        // Balance (big number)
         tvRemainingBudget.setText(bnConverter.toBengali(
                 String.format(Locale.US, "%,.0f", Math.max(balance, 0))));
 
-        // Income | Expense labels
         tvSpentLabel.setText("আয়: ৳" + bnConverter.toBengali(
                 String.format(Locale.US, "%,.0f", income)));
         tvBudgetGoal.setText("ব্যয়: ৳" + bnConverter.toBengali(
                 String.format(Locale.US, "%,.0f", expense)));
 
-        // Total expense metric (right)
         tvTotalExpense.setText(bnConverter.toBengali(
                 String.format(Locale.US, "%,.0f", expense)));
 
-        // Daily average
         tvDailyAverage.setText(bnConverter.formatCurrency(dailyAvg));
 
-        // Progress = expense / income (all-time), clamped
         int progress = income > 0
                 ? (int) Math.min((expense / income) * 100, 100)
                 : 0;
         budgetProgress.setProgress(progress);
         tvBudgetUsed.setText(bnConverter.toBengali(progress) + "% ব্যয় হয়েছে");
 
-        // Spending pace — uses CURRENT MONTH totals
+        // ─── Spending pace (current month) ───
         double monthIncome  = dbHelper.getMonthIncome(year, month);
         double monthExpense = dbHelper.getMonthExpense(year, month);
 
@@ -165,7 +169,7 @@ public class HomeFragment extends Fragment {
                     ContextCompat.getColor(requireContext(), R.color.on_primary_fixed));
         }
 
-        // Today's list
+        // ─── Today's list (হেডার ছাড়া — সবই আজকের) ───
         List<Expense> todayExpenses = dbHelper.getTodayExpenses();
         todayAdapter.updateData(todayExpenses);
 
@@ -186,9 +190,10 @@ public class HomeFragment extends Fragment {
         }
         tvTodayCount.setText(bnConverter.toBengali(todayExpenses.size()) + "টি এন্ট্রি");
 
-        // Recent
-        List<Expense> recentExpenses = dbHelper.getRecentExpenses(10);
-        recentAdapter.updateData(recentExpenses);
+        // ─── Recent list (তারিখ-গ্রুপ সহ) ───
+        // এখানে ৩০টা আনছি যাতে একাধিক দিনের ডেটা গ্রুপ হয়ে ধরা পড়ে
+        List<Expense> recentExpenses = dbHelper.getRecentExpenses(30);
+        recentAdapter.setExpenses(recentExpenses);
     }
 
     @Override

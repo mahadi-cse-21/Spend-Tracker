@@ -22,7 +22,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "spendtrack.db";
-    private static final int DB_VERSION = 5;
+    private static final int DB_VERSION = 6;
 
     // ─── Expense table ─────────────────────────────────────────
     private static final String TABLE_EXPENSE = "expenses";
@@ -59,6 +59,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_LOAN_DUE_DATE = "due_date";
     private static final String COL_LOAN_NOTE = "note";
     private static final String COL_LOAN_CLOSED = "closed";
+    private static final String COL_LOAN_LINKED_EXPENSE_ID = "linked_expense_id";
 
     private static final String CAT_TOTAL = "__TOTAL__";
 
@@ -105,7 +106,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_LOAN_DATE + " INTEGER, " +
                 COL_LOAN_DUE_DATE + " INTEGER, " +
                 COL_LOAN_NOTE + " TEXT, " +
-                COL_LOAN_CLOSED + " INTEGER DEFAULT 0)");
+                COL_LOAN_CLOSED + " INTEGER DEFAULT 0, " +
+                COL_LOAN_LINKED_EXPENSE_ID + " INTEGER DEFAULT -1)");
     }
 
     @Override
@@ -128,6 +130,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         COL_LOAN_DUE_DATE + " INTEGER, " +
                         COL_LOAN_NOTE + " TEXT, " +
                         COL_LOAN_CLOSED + " INTEGER DEFAULT 0)");
+            } catch (Exception ignored) {}
+        }
+        if (oldVersion < 6) {
+            try {
+                db.execSQL("ALTER TABLE " + TABLE_LOAN +
+                        " ADD COLUMN " + COL_LOAN_LINKED_EXPENSE_ID + " INTEGER DEFAULT -1");
             } catch (Exception ignored) {}
         }
     }
@@ -258,7 +266,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return getExpensesByRange(startOfMonth, endOfMonth);
     }
 
-    /** Returns every row in the table. Used for backup export. */
     public List<Expense> getAllExpenses() {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABLE_EXPENSE, null, null, null,
@@ -317,17 +324,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // ═══════════════════════════════════════════════════════════
     // TOTALS — ALL TIME
     // ═══════════════════════════════════════════════════════════
-    /** সৃষ্টির শুরু থেকে সব আয়ের যোগফল */
     public double getTotalIncomeAllTime() {
         return getTypeTotalAllTime("income");
     }
 
-    /** সৃষ্টির শুরু থেকে সব ব্যয়ের যোগফল */
     public double getTotalExpenseAllTime() {
         return getTypeTotalAllTime("expense");
     }
 
-    /** সৃষ্টির শুরু থেকে সব ব্যালেন্স (আয় − ব্যয়) */
     public double getBalanceAllTime() {
         return getTotalIncomeAllTime() - getTotalExpenseAllTime();
     }
@@ -348,7 +352,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return total;
     }
 
-    /** Expense-only total for a category. Safe for budgets. */
     public double getCategoryRangeTotalExpense(String category, long start, long end) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABLE_EXPENSE,
@@ -464,6 +467,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         v.put(COL_LOAN_DUE_DATE,  loan.getDueDate());
         v.put(COL_LOAN_NOTE,      loan.getNote());
         v.put(COL_LOAN_CLOSED,    loan.isClosed() ? 1 : 0);
+        v.put(COL_LOAN_LINKED_EXPENSE_ID, loan.getLinkedExpenseId());
         long id = db.insert(TABLE_LOAN, null, v);
         db.close();
         return id;
@@ -480,6 +484,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         v.put(COL_LOAN_DUE_DATE,  loan.getDueDate());
         v.put(COL_LOAN_NOTE,      loan.getNote());
         v.put(COL_LOAN_CLOSED,    loan.isClosed() ? 1 : 0);
+        v.put(COL_LOAN_LINKED_EXPENSE_ID, loan.getLinkedExpenseId());
         int rows = db.update(TABLE_LOAN, v, COL_LOAN_ID + "=?",
                 new String[]{String.valueOf(loan.getId())});
         db.close();
@@ -487,7 +492,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void deleteLoan(long id) {
+        Loan loan = getLoan(id);
         SQLiteDatabase db = getWritableDatabase();
+
+        // ★ শুধু "given" ঋণের জন্য তৈরি হওয়া transaction মুছুন
+        if (loan != null && loan.isGiven()) {
+            if (loan.getLinkedExpenseId() > 0) {
+                db.delete(TABLE_EXPENSE, COL_ID + "=?",
+                        new String[]{String.valueOf(loan.getLinkedExpenseId())});
+            }
+            String payNote = "ঋণ ফেরত পেয়েছি — " + loan.getPersonName();
+            db.delete(TABLE_EXPENSE,
+                    COL_NOTE + "=? AND " + COL_CATEGORY + "=?",
+                    new String[]{payNote, "ঋণ পরিশোধ"});
+        }
+
         db.delete(TABLE_LOAN, COL_LOAN_ID + "=?", new String[]{String.valueOf(id)});
         db.close();
     }
@@ -518,7 +537,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return list;
     }
 
-    /** মোট বাকি (আমি ঋণ নিয়েছি = দিতে হবে মোট) */
     public double getTotalTakenRemaining() {
         double total = 0;
         for (Loan l : getAllLoans()) {
@@ -527,7 +545,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return total;
     }
 
-    /** মোট পাব (আমি ঋণ দিয়েছি) */
     public double getTotalGivenRemaining() {
         double total = 0;
         for (Loan l : getAllLoans()) {
@@ -581,12 +598,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         l.setDueDate(c.getLong(c.getColumnIndexOrThrow(COL_LOAN_DUE_DATE)));
         l.setNote(c.getString(c.getColumnIndexOrThrow(COL_LOAN_NOTE)));
         l.setClosed(c.getInt(c.getColumnIndexOrThrow(COL_LOAN_CLOSED)) == 1);
+        int idx = c.getColumnIndex(COL_LOAN_LINKED_EXPENSE_ID);
+        if (idx >= 0) l.setLinkedExpenseId(c.getLong(idx));
         return l;
     }
 
     // ═══════════════════════════════════════════════════════════
-// WEEKLY TOTALS — current week (Sunday–Saturday)
-// ═══════════════════════════════════════════════════════════
+    // WEEKLY TOTALS
+    // ═══════════════════════════════════════════════════════════
     public double getCurrentWeekTotalIncome() {
         long[] range = getCurrentWeekRange();
         return getTypeTotalInRange("income", range[0], range[1]);
@@ -604,7 +623,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private long[] getCurrentWeekRange() {
         Calendar cal = Calendar.getInstance();
-        // Sunday as first day
         cal.set(Calendar.DAY_OF_WEEK, cal.getFirstDayOfWeek());
         cal.set(Calendar.HOUR_OF_DAY, 0);
         cal.set(Calendar.MINUTE, 0);
@@ -622,8 +640,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // ═══════════════════════════════════════════════════════════
-// YEARLY TOTALS — current year
-// ═══════════════════════════════════════════════════════════
+    // YEARLY TOTALS
+    // ═══════════════════════════════════════════════════════════
     public double getCurrentYearTotalIncome() {
         long[] range = getCurrentYearRange();
         return getTypeTotalInRange("income", range[0], range[1]);
@@ -658,8 +676,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     // ═══════════════════════════════════════════════════════════
-// GENERIC RANGE HELPER
-// ═══════════════════════════════════════════════════════════
+    // GENERIC RANGE HELPER
+    // ═══════════════════════════════════════════════════════════
     private double getTypeTotalInRange(String type, long start, long end) {
         SQLiteDatabase db = getReadableDatabase();
         Cursor cursor = db.query(TABLE_EXPENSE,
@@ -675,6 +693,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.close();
         return total;
     }
+
     public double getMonthIncome(int year, int month) {
         Calendar c = Calendar.getInstance();
         c.set(year, month, 1, 0, 0, 0);
