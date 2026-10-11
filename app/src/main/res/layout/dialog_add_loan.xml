@@ -52,7 +52,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:background="@color/surface_container_low"
-        android:hint="যেমন: করিম ভাই"
+        android:hint="যেমন: আরমান ভাই"
         android:inputType="textCapWords"
         android:padding="12dp"
         android:textColor="@color/on_surface"
