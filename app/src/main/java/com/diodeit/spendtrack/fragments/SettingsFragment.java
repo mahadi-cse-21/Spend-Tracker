@@ -3,10 +3,12 @@ package com.diodeit.spendtrack.fragments;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -24,6 +26,8 @@ import com.diodeit.spendtrack.utils.PreferenceManager;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 public class SettingsFragment extends Fragment {
@@ -33,6 +37,9 @@ public class SettingsFragment extends Fragment {
     private static final String CONTACT_PHONE = "+8801780689788";
     private static final String CONTACT_WHATSAPP = "+8801780689788"; // no + sign
 
+    // ★ Version name — onCreate এ পড়া হবে
+    private String appVersionName = "2.2.0";
+
     private MaterialSwitch switchDailyReminder;
     private LinearLayout rowBackup, rowRestore, rowClear, rowPrivacy, rowContact;
 
@@ -40,6 +47,7 @@ public class SettingsFragment extends Fragment {
     private DatabaseHelper dbHelper;
 
     private ActivityResultLauncher<String[]> csvPicker;
+    TextView version_name ;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,6 +56,29 @@ public class SettingsFragment extends Fragment {
         csvPicker = registerForActivityResult(
                 new ActivityResultContracts.OpenDocument(),
                 uri -> { if (uri != null) performRestore(uri); });
+
+
+        // ★ Version name এখানেই পড়ে নিলাম — একবারই
+        readAppVersion();
+
+    }
+
+    /**
+     * ★ PackageManager থেকে version name পড়া।
+     *   onCreate এ কল হয় — তাই Fragment সবসময় attached থাকে।
+     */
+    private void readAppVersion() {
+        try {
+            appVersionName = requireContext()
+                    .getPackageManager()
+                    .getPackageInfo(requireContext().getPackageName(), 0)
+                    .versionName;
+
+            Log.d("SpendTrack_Version", "Version name: " + appVersionName);
+        } catch (Exception e) {
+            Log.e("SpendTrack_Version", "Failed to read version name", e);
+            // fallback: appVersionName ডিফল্ট "2.2.0" ই থাকবে
+        }
     }
 
     @Nullable
@@ -59,6 +90,8 @@ public class SettingsFragment extends Fragment {
 
         prefManager = new PreferenceManager(requireContext());
         dbHelper = new DatabaseHelper(requireContext());
+        version_name = view.findViewById(R.id.version_name);
+        version_name.setText(appVersionName);
 
         initViews(view);
         loadSettings();
@@ -124,6 +157,7 @@ public class SettingsFragment extends Fragment {
                 .setNegativeButton("বন্ধ করুন", null)
                 .show();
     }
+
     /** Opens the email app with the support address pre-filled. */
     private void sendEmail() {
         Intent intent = new Intent(Intent.ACTION_SENDTO);
@@ -132,7 +166,7 @@ public class SettingsFragment extends Fragment {
         intent.putExtra(Intent.EXTRA_TEXT,
                 "আপনার মতামত বা সমস্যা এখানে লিখুন:\n\n\n" +
                         "---\n" +
-                        "অ্যাপ সংস্করণ: 1.0\n" +
+                        "অ্যাপ সংস্করণ: " + appVersionName + "\n" +
                         "ডিভাইস: " + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL + "\n" +
                         "Android: " + android.os.Build.VERSION.RELEASE);
         try {
@@ -174,13 +208,11 @@ public class SettingsFragment extends Fragment {
     /** Opens the Play Store listing so users can leave a review. */
     private void openPlayStore() {
         try {
-            // ★ Replace with your real package name
             String packageName = requireContext().getPackageName();
             Intent intent = new Intent(Intent.ACTION_VIEW,
                     Uri.parse("market://details?id=" + packageName));
             startActivity(intent);
         } catch (Exception e) {
-            // Fallback to web browser if Play Store app not installed
             try {
                 String packageName = requireContext().getPackageName();
                 Intent intent = new Intent(Intent.ACTION_VIEW,
@@ -194,7 +226,7 @@ public class SettingsFragment extends Fragment {
     }
 
     // ================================================================
-    // BACKUP / RESTORE / CLEAR / PRIVACY  (unchanged)
+    // BACKUP / RESTORE / CLEAR / PRIVACY
     // ================================================================
     private void exportBackup() {
         List<Expense> all = dbHelper.getAllExpenses();
