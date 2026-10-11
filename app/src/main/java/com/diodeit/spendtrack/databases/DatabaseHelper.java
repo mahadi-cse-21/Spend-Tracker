@@ -491,20 +491,30 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return rows;
     }
 
+    /**
+     * ঋণ মুছুন — সংশ্লিষ্ট সব transaction সহ (taken ও given দুটোর জন্যই)
+     */
     public void deleteLoan(long id) {
         Loan loan = getLoan(id);
         SQLiteDatabase db = getWritableDatabase();
 
-        // ★ শুধু "given" ঋণের জন্য তৈরি হওয়া transaction মুছুন
-        if (loan != null && loan.isGiven()) {
+        if (loan != null) {
+
+            // ── ১) Principal transaction (taken = income / given = expense) ──
             if (loan.getLinkedExpenseId() > 0) {
                 db.delete(TABLE_EXPENSE, COL_ID + "=?",
                         new String[]{String.valueOf(loan.getLinkedExpenseId())});
             }
-            String payNote = "ঋণ ফেরত পেয়েছি — " + loan.getPersonName();
+
+            // ── ২) সব পরিশোধের transaction ──
+            //     taken হলে note: "ঋণ পরিশোধ — <name>"
+            //     given হলে note: "ঋণ ফেরত পেয়েছি — <name>"
+            String payNoteTaken = "ঋণ পরিশোধ — " + loan.getPersonName();
+            String payNoteGiven = "ঋণ ফেরত পেয়েছি — " + loan.getPersonName();
+
             db.delete(TABLE_EXPENSE,
-                    COL_NOTE + "=? AND " + COL_CATEGORY + "=?",
-                    new String[]{payNote, "ঋণ পরিশোধ"});
+                    COL_NOTE + " IN (?, ?) AND " + COL_CATEGORY + "=?",
+                    new String[]{payNoteTaken, payNoteGiven, "ঋণ পরিশোধ"});
         }
 
         db.delete(TABLE_LOAN, COL_LOAN_ID + "=?", new String[]{String.valueOf(id)});
