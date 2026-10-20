@@ -73,7 +73,7 @@ public class AnalyticsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_analytics, container, false);
 
         bnConverter = new BengaliNumberConverter();
-        dbHelper = new DatabaseHelper(requireContext());
+        dbHelper = DatabaseHelper.get(requireContext());
 
         initViews(view);
         setupPeriodSelector();

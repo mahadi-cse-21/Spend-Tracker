@@ -1,17 +1,17 @@
 package com.diodeit.spendtrack.adapters;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.diodeit.spendtrack.R;
 import com.diodeit.spendtrack.models.Category;
+
+import java.util.List;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHolder> {
 
@@ -20,11 +20,11 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     }
 
     private Context context;
-    private Category[] categories;
+    private List<Category> categories;
     private OnCategoryClickListener listener;
     private int selectedPosition = 0;
 
-    public CategoryAdapter(Context context, Category[] categories, OnCategoryClickListener listener) {
+    public CategoryAdapter(Context context, List<Category> categories, OnCategoryClickListener listener) {
         this.context = context;
         this.categories = categories;
         this.listener = listener;
@@ -39,7 +39,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Category category = categories[position];
+        Category category = categories.get(position);
         holder.tvEmoji.setText(category.getEmoji());
         holder.tvName.setText(category.getShortName());
 
@@ -65,7 +65,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-        return categories.length;
+        return categories.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

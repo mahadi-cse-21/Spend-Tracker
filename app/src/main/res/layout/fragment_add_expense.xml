@@ -4,7 +4,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/surface">
+    android:background="@color/surface"
+    android:fitsSystemWindows="true">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/app_bar"
@@ -26,7 +27,6 @@
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
         android:scrollbars="none"
         android:clipToPadding="false"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
@@ -36,10 +36,10 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="16dp"
-            android:paddingBottom="120dp"
+            android:paddingBottom="250dp"
             android:clipToPadding="false">
 
-            <!-- ===== Type toggle: খরচ | আয় ===== -->
+            <!-- ===== Type toggle ===== -->
             <com.google.android.material.tabs.TabLayout
                 android:id="@+id/tab_type"
                 android:layout_width="match_parent"
@@ -128,14 +128,32 @@
             </androidx.cardview.widget.CardView>
 
             <!-- ===== Category selector ===== -->
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="ক্যাটাগরি নির্বাচন করুন"
-                android:textColor="@color/on_surface"
-                android:textSize="14sp"
-                android:textStyle="bold" />
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="ক্যাটাগরি নির্বাচন করুন"
+                    android:textColor="@color/on_surface"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_add_new_category"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp"
+                    android:text="+ নতুন ক্যাটাগরি"
+                    android:textColor="@color/primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tv_selected_category"
@@ -168,11 +186,9 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
                         android:text="নাম"
                         android:textColor="@color/on_surface"
                         android:textSize="13sp"
@@ -212,6 +228,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
                         android:text="পরিমাণ"
                         android:textColor="@color/on_surface"
                         android:textSize="13sp"
@@ -249,7 +266,6 @@
                             android:textSize="18sp"
                             android:textStyle="bold" />
                     </LinearLayout>
-
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_add_item"

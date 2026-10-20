@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.diodeit.spendtrack.R;
@@ -36,7 +37,7 @@ public class TransactionGroupAdapter
     }
 
     private final Context context;
-    private final List<ListItem> items = new ArrayList<>();
+    private List<ListItem> items = new ArrayList<>();
     private final OnTransactionClickListener listener;
     private final BengaliNumberConverter bn = new BengaliNumberConverter();
 
@@ -46,19 +47,12 @@ public class TransactionGroupAdapter
         this.listener = listener;
     }
 
-    /** মূল এন্ট্রি পয়েন্ট — History/Home এখান থেকে ডেটা পাঠাবে */
+    /** ★ Uses DiffUtil to only update changed items instead of redrawing everything */
     public void setExpenses(List<Expense> expenses) {
-        items.clear();
+        if (expenses == null) expenses = new ArrayList<>();
 
-        if (expenses == null || expenses.isEmpty()) {
-            notifyDataSetChanged();
-            return;
-        }
-
-        // তারিখ অনুযায়ী গ্রুপ। LinkedHashMap insertion order রক্ষা করে।
-        // যেহেতু expenses date DESC সাজানো, তাই নতুন তারিখ আগে থাকবে।
+        // 1. Build the new grouped list
         LinkedHashMap<Long, List<Expense>> grouped = new LinkedHashMap<>();
-
         for (Expense e : expenses) {
             long key = startOfDay(e.getDate());
             List<Expense> bucket = grouped.get(key);
@@ -69,6 +63,7 @@ public class TransactionGroupAdapter
             bucket.add(e);
         }
 
+        List<ListItem> newItems = new ArrayList<>();
         for (Map.Entry<Long, List<Expense>> entry : grouped.entrySet()) {
             long dayStart = entry.getKey();
             List<Expense> dayList = entry.getValue();
@@ -79,13 +74,57 @@ public class TransactionGroupAdapter
                 else              exp += e.getAmount();
             }
 
-            // হেডার প্রথমে
-            items.add(new DateHeaderItem(dayStart, inc, exp));
-            // তারপর সেই দিনের সব লেনদেন
-            for (Expense e : dayList) items.add(new TransactionItem(e));
+            newItems.add(new DateHeaderItem(dayStart, inc, exp));
+            for (Expense e : dayList) newItems.add(new TransactionItem(e));
         }
 
-        notifyDataSetChanged();
+        // 2. Calculate the difference
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new DiffUtil.Callback() {
+            @Override
+            public int getOldListSize() { return items.size(); }
+
+            @Override
+            public int getNewListSize() { return newItems.size(); }
+
+            @Override
+            public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
+                ListItem oldItem = items.get(oldItemPosition);
+                ListItem newItem = newItems.get(newItemPosition);
+
+                if (oldItem.getItemType() != newItem.getItemType()) return false;
+
+                if (oldItem.getItemType() == ListItem.TYPE_HEADER) {
+                    return ((DateHeaderItem) oldItem).getDate() == ((DateHeaderItem) newItem).getDate();
+                } else {
+                    return ((TransactionItem) oldItem).getExpense().getId() ==
+                            ((TransactionItem) newItem).getExpense().getId();
+                }
+            }
+
+            @Override
+            public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
+                ListItem oldItem = items.get(oldItemPosition);
+                ListItem newItem = newItems.get(newItemPosition);
+
+                if (oldItem.getItemType() == ListItem.TYPE_HEADER) {
+                    DateHeaderItem oldH = (DateHeaderItem) oldItem;
+                    DateHeaderItem newH = (DateHeaderItem) newItem;
+                    return oldH.getIncome() == newH.getIncome() &&
+                            oldH.getExpense() == newH.getExpense();
+                } else {
+                    Expense oldE = ((TransactionItem) oldItem).getExpense();
+                    Expense newE = ((TransactionItem) newItem).getExpense();
+                    return oldE.getAmount() == newE.getAmount() &&
+                            oldE.getType().equals(newE.getType()) &&
+                            oldE.getNote().equals(newE.getNote());
+                }
+            }
+        });
+
+        // 3. Apply the updates
+        items.clear();
+        items.addAll(newItems);
+        diffResult.dispatchUpdatesTo(this);
     }
 
     private long startOfDay(long millis) {

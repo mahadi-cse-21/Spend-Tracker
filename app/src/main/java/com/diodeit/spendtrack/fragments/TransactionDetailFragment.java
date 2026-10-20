@@ -1,6 +1,7 @@
 package com.diodeit.spendtrack.fragments;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +26,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.diodeit.spendtrack.R;
 import com.diodeit.spendtrack.databases.DatabaseHelper;
 import com.diodeit.spendtrack.models.Expense;
+import com.diodeit.spendtrack.models.Loan;
 import com.diodeit.spendtrack.utils.BengaliNumberConverter;
 import com.diodeit.spendtrack.utils.CategoryUtils;
 
@@ -35,6 +37,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class TransactionDetailFragment extends Fragment {
+
+    private static final String TAG = "TxnDetail";
 
     private ImageView ivCategoryIcon;
     private TextView tvCategoryName, tvAmount, tvDatetime, tvReceiptId;
@@ -47,6 +51,8 @@ public class TransactionDetailFragment extends Fragment {
     private DatabaseHelper dbHelper;
     private Expense expense;
     private long expenseId = -1;
+
+    private boolean isLoanLinked = false;
 
     public static TransactionDetailFragment newInstance(long expenseId) {
         TransactionDetailFragment fragment = new TransactionDetailFragment();
@@ -72,7 +78,7 @@ public class TransactionDetailFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_transaction_detail, container, false);
 
         bnConverter = new BengaliNumberConverter();
-        dbHelper = new DatabaseHelper(requireContext());
+        dbHelper = DatabaseHelper.get(requireContext());
 
         if (expenseId > 0) {
             expense = dbHelper.getExpense(expenseId);
@@ -85,11 +91,72 @@ public class TransactionDetailFragment extends Fragment {
             return view;
         }
 
+        isLoanLinked = isLoanLinkedExpense(expense);
+
         initViews(view);
         loadData(view);
         setupClickListeners();
 
         return view;
+    }
+
+    private boolean isLoanLinkedExpense(Expense e) {
+        if (e == null) return false;
+        if (e.getLoanId() > 0) return true;
+        String cat = e.getCategory();
+        if ("ঋণ".equals(cat) || "ঋণ পরিশোধ".equals(cat)) return true;
+        String note = e.getNote();
+        if (note != null) {
+            if (note.startsWith("ঋণ নিয়েছি") ||
+                    note.startsWith("ঋণ দিয়েছি") ||
+                    note.startsWith("ঋণ পরিশোধ") ||
+                    note.startsWith("ঋণ ফেরত পেয়েছি")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * ★ Find which loan this expense belongs to.
+     *    Returns -1 if not found.
+     */
+    private long findLoanIdForExpense(Expense e) {
+        if (e == null) return -1;
+        if (e.getLoanId() > 0) return e.getLoanId();
+
+        // Scan all loans for a linked_expense_id or matching person name
+        List<Loan> loans = dbHelper.getAllLoans();
+        for (Loan l : loans) {
+            if (l.getLinkedExpenseId() == e.getId()) {
+                Log.d(TAG, "Found loan via linkedExpenseId: " + l.getId());
+                return l.getId();
+            }
+        }
+
+        // Fallback: match by note person name
+        String note = e.getNote();
+        if (note != null) {
+            String person = extractPersonFromNote(note);
+            if (!person.isEmpty()) {
+                for (Loan l : loans) {
+                    if (person.equals(l.getPersonName())) {
+                        Log.d(TAG, "Found loan via person name: " + l.getId());
+                        return l.getId();
+                    }
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    private String extractPersonFromNote(String note) {
+        if (note == null) return "";
+        int idx = note.indexOf('—');
+        if (idx < 0) idx = note.indexOf('-');
+        if (idx < 0) return "";
+        return note.substring(idx + 1).trim();
     }
 
     private void initViews(View view) {
@@ -152,7 +219,6 @@ public class TransactionDetailFragment extends Fragment {
             tvSectionTitle.setText(isIncome ? "আয়ের বিবরণ" : "খরচের বিবরণ");
         }
 
-        // ─── Items list with edit + delete ────────────────────────
         LinearLayout llItemsContainer = root.findViewById(R.id.ll_items_container);
         if (llItemsContainer != null) {
             llItemsContainer.removeAllViews();
@@ -181,8 +247,13 @@ public class TransactionDetailFragment extends Fragment {
                 tvA.setText("৳ " + bnConverter.toBengali(
                         String.format(Locale.US, "%,.0f", item.getAmount())));
 
-                btnEditItem.setOnClickListener(v -> showEditItemDialog(index));
-                btnDeleteItem.setOnClickListener(v -> confirmDeleteItem(index));
+                if (isLoanLinked) {
+                    btnEditItem.setVisibility(View.GONE);
+                    btnDeleteItem.setVisibility(View.GONE);
+                } else {
+                    btnEditItem.setOnClickListener(v -> showEditItemDialog(index));
+                    btnDeleteItem.setOnClickListener(v -> confirmDeleteItem(index));
+                }
 
                 llItemsContainer.addView(row);
             }
@@ -194,7 +265,6 @@ public class TransactionDetailFragment extends Fragment {
                     String.format(Locale.US, "%,.0f", expense.getAmount())));
         }
 
-        // Wallet / Vendor / Note / Tags
         if (expense.getWallet() != null && !expense.getWallet().isEmpty()) {
             llWalletRow.setVisibility(View.VISIBLE);
             tvWallet.setText(expense.getWallet());
@@ -217,18 +287,55 @@ public class TransactionDetailFragment extends Fragment {
                 cgTags.addView(chip);
             }
         }
+
+        // ★ Button label depends on link state
+        if (btnEdit != null) {
+            btnEdit.setVisibility(View.VISIBLE);
+            if (isLoanLinked) {
+                btnEdit.setText("ঋণ এডিট করুন");
+            } else {
+                btnEdit.setText(R.string.edit_expense);
+            }
+        }
     }
 
     private void setupClickListeners() {
         btnEdit.setOnClickListener(v -> {
+            if (isLoanLinked) {
+                // ★ Find the loan and open editor directly
+                long loanId = findLoanIdForExpense(expense);
+                Log.d(TAG, "isLoanLinked=true; findLoanIdForExpense -> " + loanId);
+
+                if (loanId > 0) {
+                    ((MainActivity) requireActivity()).openDetailFragment(
+                            LoansFragment.newInstanceForEdit(loanId),
+                            "LOANS");
+                } else {
+                    // Fallback: open LoansFragment without auto-edit
+                    Toast.makeText(requireContext(),
+                            "ঋণ খুঁজে পাওয়া যায়নি — তালিকা থেকে এডিট করুন",
+                            Toast.LENGTH_LONG).show();
+                    ((MainActivity) requireActivity())
+                            .openDetailFragment(new LoansFragment(), "LOANS");
+                }
+                return;
+            }
             AddExpenseFragment frag = AddExpenseFragment.newInstanceForEdit(expense.getId());
             ((MainActivity) requireActivity()).openDetailFragment(frag, "ADD_EDIT");
         });
+    }
 
-  }
-
-    // ─── Edit a single item ───────────────────────────────────────
+    // ═══════════════════════════════════════════════════════
+    // Item-level edit/delete — blocked for loan-linked
+    // ═══════════════════════════════════════════════════════
     private void showEditItemDialog(int index) {
+        if (isLoanLinked) {
+            Toast.makeText(requireContext(),
+                    "ঋণ-সংযুক্ত লেনদেনের আইটেম এডিট করা যায় না",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (expense.getItems() == null
                 || index < 0
                 || index >= expense.getItems().size()) return;
@@ -290,8 +397,14 @@ public class TransactionDetailFragment extends Fragment {
                 .show();
     }
 
-    // ─── Delete a single item ─────────────────────────────────────
     private void confirmDeleteItem(int index) {
+        if (isLoanLinked) {
+            Toast.makeText(requireContext(),
+                    "ঋণ-সংযুক্ত লেনদেনের আইটেম মুছে ফেলা যায় না",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         if (expense.getItems() == null
                 || index < 0
                 || index >= expense.getItems().size()) return;
@@ -327,7 +440,6 @@ public class TransactionDetailFragment extends Fragment {
                 .show();
     }
 
-    // ─── Reload the whole screen ──────────────────────────────────
     private void refreshScreen() {
         View root = getView();
         if (root == null) return;
@@ -337,11 +449,32 @@ public class TransactionDetailFragment extends Fragment {
             return;
         }
         expense = refreshed;
+        isLoanLinked = isLoanLinkedExpense(expense);
         loadData(root);
     }
 
-    // ─── Delete the whole transaction ─────────────────────────────
     private void confirmDelete() {
+        if (isLoanLinked) {
+            long loanId = findLoanIdForExpense(expense);
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("ঋণ-সংযুক্ত লেনদেন")
+                    .setMessage("এই লেনদেনটি একটি ঋণের সাথে সংযুক্ত। " +
+                            "এটি মুছতে হলে ঋণটি মুছে ফেলুন।")
+                    .setPositiveButton("ঋণের হিসাবে যান", (d, w) -> {
+                        if (loanId > 0) {
+                            ((MainActivity) requireActivity()).openDetailFragment(
+                                    LoansFragment.newInstanceForEdit(loanId),
+                                    "LOANS");
+                        } else {
+                            ((MainActivity) requireActivity())
+                                    .openDetailFragment(new LoansFragment(), "LOANS");
+                        }
+                    })
+                    .setNegativeButton("বাতিল", null)
+                    .show();
+            return;
+        }
+
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("মুছে ফেলুন")
                 .setMessage("আপনি কি এই লেনদেনটি মুছে ফেলতে চান? এটি ফিরিয়ে আনা যাবে না।")

@@ -51,8 +51,12 @@
                 app:cardElevation="1dp">
 
                 <LinearLayout
+                    android:id="@+id/row_daily_reminder"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="16dp">
@@ -70,13 +74,21 @@
                             android:textColor="@color/on_surface"
                             android:textSize="14sp"
                             android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tv_reminder_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="রাত ৮:০০ টা"
+                            android:textColor="@color/primary"
+                            android:textSize="12sp" />
                     </LinearLayout>
 
                     <com.google.android.material.materialswitch.MaterialSwitch
                         android:id="@+id/switch_daily_reminder"
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:checked="true" />
+                        android:layout_height="wrap_content" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -160,7 +172,7 @@
                         android:layout_marginStart="72dp"
                         android:background="@color/surface_container_high" />
 
-                    <!-- ★ RESTORE (NEW) -->
+                    <!-- RESTORE -->
                     <LinearLayout
                         android:id="@+id/row_restore"
                         android:layout_width="match_parent"

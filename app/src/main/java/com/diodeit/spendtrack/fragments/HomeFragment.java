@@ -1,6 +1,8 @@
 package com.diodeit.spendtrack.fragments;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,19 +31,21 @@ import java.util.Locale;
 
 public class HomeFragment extends Fragment {
 
-    private TextView tvTotalExpense, tvTodayExpense, tvRemainingBudget, tvBudgetUsed;
-    private TextView tvTodayCount, tvSpentLabel, tvBudgetGoal, tvDailyAverage, tvSpendingPace;
+    private TextView tvTotalIncome, tvTotalExpense, tvTotalEntries;
+    private TextView tvTodayExpense, tvTodayCount;
+    private TextView tvSpentLabel, tvBudgetGoal, tvDailyAverage, tvSpendingPace;
+    private TextView tvRemainingBudget, tvBudgetUsed;
     private LinearProgressIndicator budgetProgress;
     private RecyclerView rvTodayExpenses, rvRecentTransactions;
 
-    // ★ Today → সাধারণ ExpenseAdapter (হেডার ছাড়া, কারণ সবই আজকের)
     private ExpenseAdapter todayAdapter;
-
-    // ★ Recent → গ্রুপ অ্যাডাপ্টার (তারিখ হেডার সহ)
     private TransactionGroupAdapter recentAdapter;
 
     private DatabaseHelper dbHelper;
     private BengaliNumberConverter bnConverter;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    private int lastLoadedVersion = -1;
 
     @Nullable
     @Override
@@ -50,7 +54,7 @@ public class HomeFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        dbHelper = new DatabaseHelper(requireContext());
+        dbHelper = DatabaseHelper.get(requireContext());
         bnConverter = new BengaliNumberConverter();
 
         initViews(view);
@@ -62,138 +66,144 @@ public class HomeFragment extends Fragment {
     }
 
     private void initViews(View view) {
+        tvTotalIncome        = view.findViewById(R.id.tv_total_income);
         tvTotalExpense       = view.findViewById(R.id.tv_total_expense);
+        tvTotalEntries       = view.findViewById(R.id.tv_total_transactions);
         tvTodayExpense       = view.findViewById(R.id.tv_today_expense);
-        tvRemainingBudget    = view.findViewById(R.id.tv_remaining_budget);
-        tvBudgetUsed         = view.findViewById(R.id.tv_budget_used);
-        tvSpentLabel         = view.findViewById(R.id.tv_spent_label);
         tvTodayCount         = view.findViewById(R.id.tv_today_count);
+        tvSpentLabel         = view.findViewById(R.id.tv_spent_label);
         tvBudgetGoal         = view.findViewById(R.id.tv_budget_goal);
         tvDailyAverage       = view.findViewById(R.id.tv_daily_average);
         tvSpendingPace       = view.findViewById(R.id.tv_spending_pace);
+        tvRemainingBudget    = view.findViewById(R.id.tv_remaining_budget);
+        tvBudgetUsed         = view.findViewById(R.id.tv_budget_used);
         budgetProgress       = view.findViewById(R.id.budget_progress);
         rvTodayExpenses      = view.findViewById(R.id.rv_today_expenses);
         rvRecentTransactions = view.findViewById(R.id.rv_recent_transactions);
     }
 
     private void setupRecyclerViews() {
-        // ── Today's list — সাধারণ অ্যাডাপ্টার ──
-        todayAdapter = new ExpenseAdapter(requireContext(), new ArrayList<>(), expense -> {
-            ((MainActivity) requireActivity()).openDetailFragment(
-                    TransactionDetailFragment.newInstance(expense.getId()),
-                    "TRANSACTION_DETAIL");
-        });
-        rvTodayExpenses.setLayoutManager(new LinearLayoutManager(requireContext()));
-        rvTodayExpenses.setAdapter(todayAdapter);
-
-        // ── Recent list — তারিখ-গ্রুপ অ্যাডাপ্টার ──
-        recentAdapter = new TransactionGroupAdapter(requireContext(), expense -> {
-            ((MainActivity) requireActivity()).openDetailFragment(
-                    TransactionDetailFragment.newInstance(expense.getId()),
-                    "TRANSACTION_DETAIL");
-        });
-        rvRecentTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
-        rvRecentTransactions.setAdapter(recentAdapter);
+        if (rvTodayExpenses != null) {
+            todayAdapter = new ExpenseAdapter(requireContext(), new ArrayList<>(), expense ->
+                    ((MainActivity) requireActivity()).openDetailFragment(
+                            TransactionDetailFragment.newInstance(expense.getId()),
+                            "TRANSACTION_DETAIL"));
+            rvTodayExpenses.setLayoutManager(new LinearLayoutManager(requireContext()));
+            rvTodayExpenses.setAdapter(todayAdapter);
+        }
+        if (rvRecentTransactions != null) {
+            recentAdapter = new TransactionGroupAdapter(requireContext(), expense ->
+                    ((MainActivity) requireActivity()).openDetailFragment(
+                            TransactionDetailFragment.newInstance(expense.getId()),
+                            "TRANSACTION_DETAIL"));
+            rvRecentTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
+            rvRecentTransactions.setAdapter(recentAdapter);
+        }
     }
 
     private void setupClickListeners(View view) {
-        view.findViewById(R.id.btn_add_expense).setOnClickListener(v ->
-                ((MainActivity) requireActivity()).navigateToTab("ADD"));
-
-        view.findViewById(R.id.btn_add_income).setOnClickListener(v ->
-                ((MainActivity) requireActivity()).navigateToTab("ADD"));
-
-        view.findViewById(R.id.btn_view_analytics).setOnClickListener(v ->
-                ((MainActivity) requireActivity()).navigateToTab("ANALYTICS"));
-
-        view.findViewById(R.id.btn_view_history).setOnClickListener(v ->
-                ((MainActivity) requireActivity()).navigateToTab("HISTORY"));
-
-        view.findViewById(R.id.btn_open_loans).setOnClickListener(v ->
-                ((MainActivity) requireActivity()).openDetailFragment(
-                        new LoansFragment(), "LOANS"));
-
-        view.findViewById(R.id.btn_view_all).setOnClickListener(v ->
-                ((MainActivity) requireActivity()).navigateToTab("HISTORY"));
-
-        view.findViewById(R.id.btn_add_expense_bottom).setOnClickListener(v ->
-                ((MainActivity) requireActivity()).navigateToTab("ADD"));
+        View b;
+        if ((b = view.findViewById(R.id.btn_add_expense)) != null)
+            b.setOnClickListener(v -> ((MainActivity) requireActivity()).navigateToTab("ADD"));
+        if ((b = view.findViewById(R.id.btn_add_income)) != null)
+            b.setOnClickListener(v -> ((MainActivity) requireActivity()).navigateToTab("ADD"));
+        if ((b = view.findViewById(R.id.btn_view_analytics)) != null)
+            b.setOnClickListener(v -> ((MainActivity) requireActivity()).navigateToTab("ANALYTICS"));
+        if ((b = view.findViewById(R.id.btn_view_history)) != null)
+            b.setOnClickListener(v -> ((MainActivity) requireActivity()).navigateToTab("HISTORY"));
+        if ((b = view.findViewById(R.id.btn_open_loans)) != null)
+            b.setOnClickListener(v -> ((MainActivity) requireActivity())
+                    .openDetailFragment(new LoansFragment(), "LOANS"));
+        if ((b = view.findViewById(R.id.btn_view_all)) != null)
+            b.setOnClickListener(v -> ((MainActivity) requireActivity()).navigateToTab("HISTORY"));
+        if ((b = view.findViewById(R.id.btn_add_expense_bottom)) != null)
+            b.setOnClickListener(v -> ((MainActivity) requireActivity()).navigateToTab("ADD"));
     }
 
     private void loadData() {
         if (!isAdded()) return;
 
-        Calendar cal = Calendar.getInstance();
-        int year = cal.get(Calendar.YEAR);
-        int month = cal.get(Calendar.MONTH);
-        int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
+        // ★ Dirty check — skip DB work if nothing changed since last load
+        int v = dbHelper.getDataVersion();
+        if (v == lastLoadedVersion) return;
+        lastLoadedVersion = v;
 
-        // ─── All-time totals ───
-        double income   = dbHelper.getTotalIncomeAllTime();
-        double expense  = dbHelper.getTotalExpenseAllTime();
-        double balance  = income - expense;
-        double dailyAvg = expense / Math.max(1, dayOfMonth);
+        final Calendar cal = Calendar.getInstance();
+        final int year = cal.get(Calendar.YEAR);
+        final int month = cal.get(Calendar.MONTH);
+        final int dayOfMonth = cal.get(Calendar.DAY_OF_MONTH);
 
-        tvRemainingBudget.setText(bnConverter.toBengali(
-                String.format(Locale.US, "%,.0f", Math.max(balance, 0))));
+        MainActivity.io().execute(() -> {
+            double income   = dbHelper.getTotalIncomeAllTime();
+            double expense  = dbHelper.getTotalExpenseAllTime();
+            int    count    = dbHelper.getExpenseCount();
+            double monthIncome  = dbHelper.getMonthIncome(year, month);
+            double monthExpense = dbHelper.getMonthExpense(year, month);
+            List<Expense> todayList = dbHelper.getTodayExpenses();
+            List<Expense> recentList = dbHelper.getRecentExpenses(30);
 
-        tvSpentLabel.setText("আয়: ৳" + bnConverter.toBengali(
-                String.format(Locale.US, "%,.0f", income)));
-        tvBudgetGoal.setText("ব্যয়: ৳" + bnConverter.toBengali(
-                String.format(Locale.US, "%,.0f", expense)));
+            mainHandler.post(() -> {
+                if (!isAdded() || getView() == null) return;
 
-        tvTotalExpense.setText(bnConverter.toBengali(
-                String.format(Locale.US, "%,.0f", expense)));
+                double balance  = income - expense;
+                double dailyAvg = expense / Math.max(1, dayOfMonth);
 
-        tvDailyAverage.setText(bnConverter.formatCurrency(dailyAvg));
+                if (tvTotalIncome != null) tvTotalIncome.setText(bnConverter.formatCurrency(income));
+                if (tvTotalExpense != null) tvTotalExpense.setText(bnConverter.formatCurrency(expense));
+                if (tvTotalEntries != null) tvTotalEntries.setText(bnConverter.toBengali(count) + "টি এন্ট্রি");
 
-        int progress = income > 0
-                ? (int) Math.min((expense / income) * 100, 100)
-                : 0;
-        budgetProgress.setProgress(progress);
-        tvBudgetUsed.setText(bnConverter.toBengali(progress) + "% ব্যয় হয়েছে");
+                if (tvRemainingBudget != null) tvRemainingBudget.setText(bnConverter.toBengali(
+                        String.format(Locale.US, "%,.0f", Math.max(balance, 0))));
+                if (tvSpentLabel != null) tvSpentLabel.setText("আয়: ৳" + bnConverter.toBengali(
+                        String.format(Locale.US, "%,.0f", income)));
+                if (tvBudgetGoal != null) tvBudgetGoal.setText("ব্যয়: ৳" + bnConverter.toBengali(
+                        String.format(Locale.US, "%,.0f", expense)));
+                if (tvDailyAverage != null) tvDailyAverage.setText(bnConverter.formatCurrency(dailyAvg));
 
-        // ─── Spending pace (current month) ───
-        double monthIncome  = dbHelper.getMonthIncome(year, month);
-        double monthExpense = dbHelper.getMonthExpense(year, month);
+                int progress = income > 0
+                        ? (int) Math.min((expense / income) * 100, 100) : 0;
+                if (budgetProgress != null) budgetProgress.setProgress(progress);
+                if (tvBudgetUsed != null) tvBudgetUsed.setText(
+                        bnConverter.toBengali(progress) + "% ব্যয় হয়েছে");
 
-        if (monthIncome > 0 && monthExpense > monthIncome * 0.8) {
-            tvSpendingPace.setText("সতর্কতা");
-            tvSpendingPace.setBackgroundResource(R.drawable.bg_pill_error);
-            tvSpendingPace.setTextColor(
-                    ContextCompat.getColor(requireContext(), R.color.on_error));
-        } else {
-            tvSpendingPace.setText("স্বাভাবিক");
-            tvSpendingPace.setBackgroundResource(R.drawable.bg_pill_primary_fixed);
-            tvSpendingPace.setTextColor(
-                    ContextCompat.getColor(requireContext(), R.color.on_primary_fixed));
-        }
+                if (tvSpendingPace != null) {
+                    if (monthIncome > 0 && monthExpense > monthIncome * 0.8) {
+                        tvSpendingPace.setText("সতর্কতা");
+                        tvSpendingPace.setBackgroundResource(R.drawable.bg_pill_error);
+                        tvSpendingPace.setTextColor(ContextCompat.getColor(
+                                requireContext(), R.color.on_error));
+                    } else {
+                        tvSpendingPace.setText("স্বাভাবিক");
+                        tvSpendingPace.setBackgroundResource(R.drawable.bg_pill_primary_fixed);
+                        tvSpendingPace.setTextColor(ContextCompat.getColor(
+                                requireContext(), R.color.on_primary_fixed));
+                    }
+                }
 
-        // ─── Today's list (হেডার ছাড়া — সবই আজকের) ───
-        List<Expense> todayExpenses = dbHelper.getTodayExpenses();
-        todayAdapter.updateData(todayExpenses);
+                if (todayAdapter != null) todayAdapter.updateData(todayList);
 
-        double todayExpense = 0, todayIncome = 0;
-        for (Expense e : todayExpenses) {
-            if (e.isIncome()) todayIncome += e.getAmount();
-            else              todayExpense += e.getAmount();
-        }
+                double todayExpense = 0, todayIncome = 0;
+                for (Expense e : todayList) {
+                    if (e.isIncome()) todayIncome += e.getAmount();
+                    else              todayExpense += e.getAmount();
+                }
+                if (tvTodayExpense != null) {
+                    if (todayIncome > 0 && todayExpense > 0) {
+                        tvTodayExpense.setText(
+                                "+" + bnConverter.formatCurrency(todayIncome)
+                                        + " | -" + bnConverter.formatCurrency(todayExpense));
+                    } else if (todayIncome > 0) {
+                        tvTodayExpense.setText("+" + bnConverter.formatCurrency(todayIncome));
+                    } else {
+                        tvTodayExpense.setText(bnConverter.formatCurrency(todayExpense));
+                    }
+                }
+                if (tvTodayCount != null) tvTodayCount.setText(
+                        bnConverter.toBengali(todayList.size()) + "টি এন্ট্রি");
 
-        if (todayIncome > 0 && todayExpense > 0) {
-            tvTodayExpense.setText(
-                    "+" + bnConverter.formatCurrency(todayIncome)
-                            + " | -" + bnConverter.formatCurrency(todayExpense));
-        } else if (todayIncome > 0) {
-            tvTodayExpense.setText("+" + bnConverter.formatCurrency(todayIncome));
-        } else {
-            tvTodayExpense.setText(bnConverter.formatCurrency(todayExpense));
-        }
-        tvTodayCount.setText(bnConverter.toBengali(todayExpenses.size()) + "টি এন্ট্রি");
-
-        // ─── Recent list (তারিখ-গ্রুপ সহ) ───
-        // এখানে ৩০টা আনছি যাতে একাধিক দিনের ডেটা গ্রুপ হয়ে ধরা পড়ে
-        List<Expense> recentExpenses = dbHelper.getRecentExpenses(30);
-        recentAdapter.setExpenses(recentExpenses);
+                if (recentAdapter != null) recentAdapter.setExpenses(recentList);
+            });
+        });
     }
 
     @Override

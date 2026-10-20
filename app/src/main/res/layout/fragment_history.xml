@@ -5,10 +5,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- ═══════════ Export FAB ═══════════ -->
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="80dp">
+       >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -16,7 +18,9 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Month Selector Card -->
+            <!-- ═══════════════════════════════════════════════
+                 Month Selector Card
+                 ═══════════════════════════════════════════════ -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -30,6 +34,7 @@
                     android:orientation="vertical"
                     android:padding="16dp">
 
+                    <!-- ── Prev / Month / Next row ── -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -83,74 +88,147 @@
                             app:tint="@color/on_surface" />
                     </LinearLayout>
 
+                    <!-- ═══════════ Stat Cards ═══════════ -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:orientation="horizontal">
+                        android:orientation="vertical">
 
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        <!-- ── Card 1: আয় + ব্যয় combined (two columns inside one card) ── -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginEnd="4dp"
-                            android:background="@color/surface_container_lowest"
-                            android:orientation="vertical"
-                            android:padding="12dp">
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="@color/surface_container_lowest"
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="0dp"
+                            app:rippleColor="@color/on_surface"
+                            app:strokeWidth="0dp">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:drawableStart="@drawable/ic_payments"
-                                android:drawablePadding="4dp"
-                                android:text="@string/total_expense"
-                                android:textColor="@color/on_surface_variant"
-                                android:textSize="11sp" />
+                                android:orientation="horizontal"
+                                android:padding="14dp">
 
-                            <TextView
-                                android:id="@+id/tv_total_expense"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="৳০"
-                                android:textColor="@color/on_surface"
-                                android:textSize="20sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
+                                <!-- Column 1: আয় (Income) -->
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
 
-                        <LinearLayout
-                            android:layout_width="0dp"
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:drawableStart="@drawable/ic_trending_up"
+                                        android:drawablePadding="4dp"
+                                        android:drawableTint="@color/primary"
+                                        android:gravity="center_vertical"
+                                        android:text="আয়"
+                                        android:textColor="@color/on_surface_variant"
+                                        android:textSize="11sp" />
+
+                                    <TextView
+                                        android:id="@+id/tv_total_income"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="6dp"
+                                        android:text="৳০"
+                                        android:textColor="@color/primary"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+
+                                <!-- Vertical divider -->
+                                <View
+                                    android:layout_width="1dp"
+                                    android:layout_height="match_parent"
+                                    android:layout_marginHorizontal="12dp"
+                                    android:background="@color/outline_variant" />
+
+                                <!-- Column 2: ব্যয় (Expense) -->
+                                <LinearLayout
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:orientation="vertical">
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:drawableStart="@drawable/ic_trending_down"
+                                        android:drawablePadding="4dp"
+                                        android:drawableTint="@color/error"
+                                        android:gravity="center_vertical"
+                                        android:text="ব্যয়"
+                                        android:textColor="@color/on_surface_variant"
+                                        android:textSize="11sp" />
+
+                                    <TextView
+                                        android:id="@+id/tv_total_expense"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="6dp"
+                                        android:text="৳০"
+                                        android:textColor="@color/error"
+                                        android:textSize="18sp"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- ── Card 2: মোট এন্ট্রি (full width) ── -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="4dp"
-                            android:background="@color/surface_container_lowest"
-                            android:orientation="vertical"
-                            android:padding="12dp">
+                            android:layout_marginTop="8dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            app:cardBackgroundColor="@color/surface_container_lowest"
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="0dp"
+                            app:rippleColor="@color/on_surface"
+                            app:strokeWidth="0dp">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:drawableStart="@drawable/ic_receipt"
-                                android:drawablePadding="4dp"
-                                android:text="@string/total_transactions"
-                                android:textColor="@color/on_surface_variant"
-                                android:textSize="11sp" />
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingHorizontal="14dp"
+                                android:paddingVertical="12dp">
 
-                            <TextView
-                                android:id="@+id/tv_total_transactions"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="০"
-                                android:textColor="@color/on_surface"
-                                android:textSize="20sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:drawableStart="@drawable/ic_receipt"
+                                    android:drawablePadding="6dp"
+                                    android:drawableTint="@color/on_surface_variant"
+                                    android:gravity="center_vertical"
+                                    android:text="@string/total_transactions"
+                                    android:textColor="@color/on_surface_variant"
+                                    android:textSize="12sp" />
+
+                                <TextView
+                                    android:id="@+id/tv_total_transactions"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="০"
+                                    android:textColor="@color/on_surface"
+                                    android:textSize="18sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
                     </LinearLayout>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Search Bar -->
+            <!-- ═══════════ Search Bar ═══════════ -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -171,8 +249,8 @@
                     android:id="@+id/et_search"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:layout_marginStart="8dp"
+                    android:layout_weight="1"
                     android:background="@null"
                     android:hint="@string/search_hint"
                     android:imeOptions="actionSearch"
@@ -182,7 +260,7 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- Filter Chips -->
+            <!-- ═══════════ Filter Chips ═══════════ -->
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -193,11 +271,11 @@
                     android:id="@+id/cg_filters"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    app:singleSelection="true"
-                    app:selectionRequired="true" />
+                    app:selectionRequired="true"
+                    app:singleSelection="true" />
             </HorizontalScrollView>
 
-            <!-- Transactions List -->
+            <!-- ═══════════ Transactions List ═══════════ -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rv_transactions"
                 android:layout_width="match_parent"
@@ -205,7 +283,7 @@
                 android:layout_marginTop="16dp"
                 android:nestedScrollingEnabled="false" />
 
-            <!-- Empty State -->
+            <!-- ═══════════ Empty State ═══════════ -->
             <LinearLayout
                 android:id="@+id/ll_empty_state"
                 android:layout_width="match_parent"
@@ -245,7 +323,6 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Export FAB -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fab_export"
         android:layout_width="wrap_content"
@@ -253,9 +330,9 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:text="@string/export"
+        android:textColor="@color/on_surface"
         app:backgroundTint="@color/surface_container_high"
         app:icon="@drawable/ic_download"
-        app:iconTint="@color/primary"
-        android:textColor="@color/on_surface" />
+        app:iconTint="@color/primary" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

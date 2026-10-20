@@ -80,13 +80,39 @@ public class AddExpenseFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_add_expense, container, false);
 
         bn = new BengaliNumberConverter();
-        dbHelper = new DatabaseHelper(requireContext());
+        dbHelper = DatabaseHelper.get(requireContext());
         selectedTimestamp = System.currentTimeMillis();
 
         Bundle args = getArguments();
         if (args != null && args.getLong("expense_id", -1) > 0) {
             editExpenseId = args.getLong("expense_id", -1);
             editingExpense = dbHelper.getExpense(editExpenseId);
+
+            boolean isLoanLinked = editingExpense != null && (
+                    "ঋণ".equals(editingExpense.getCategory()) ||
+                            "ঋণ পরিশোধ".equals(editingExpense.getCategory()) ||
+                            editingExpense.getLoanId() > 0
+            );
+
+            if (isLoanLinked) {
+                Toast.makeText(requireContext(),
+                        "ঋণ-সংযুক্ত লেনদেন এখানে এডিট করা যায় না",
+                        Toast.LENGTH_LONG).show();
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("ঋণ-সংযুক্ত লেনদেন")
+                        .setMessage("এই লেনদেনটি একটি ঋণের সাথে সংযুক্ত। " +
+                                "ঋণ এডিট করতে 'ঋণের হিসাব' স্ক্রিনে যান।")
+                        .setPositiveButton("ঋণের হিসাবে যান", (d, w) -> {
+                            requireActivity().onBackPressed();
+                            ((MainActivity) requireActivity())
+                                    .openDetailFragment(new LoansFragment(), "LOANS");
+                        })
+                        .setNegativeButton("বাতিল", (d, w) -> requireActivity().onBackPressed())
+                        .setCancelable(false)
+                        .show();
+                return view;
+            }
+
             if (editingExpense != null) {
                 selectedType = editingExpense.getType() != null
                         ? editingExpense.getType() : "expense";
@@ -164,15 +190,54 @@ public class AddExpenseFragment extends Fragment {
         View.OnFocusChangeListener scrollToFocused = (v, hasFocus) -> {
             if (hasFocus && scrollView != null) {
                 v.postDelayed(() -> {
-                    int y = v.getTop();
-                    scrollView.smoothScrollTo(0, Math.max(0, y - 100));
-                }, 250);
+                    int[] location = new int[2];
+                    v.getLocationOnScreen(location);
+                    int scrollY = location[1] - 250;
+                    scrollView.smoothScrollTo(0, Math.max(0, scrollY));
+                }, 300);
             }
         };
         etAmount.setOnFocusChangeListener(scrollToFocused);
         etName.setOnFocusChangeListener(scrollToFocused);
+
+        // ★ Add category button listener
+        TextView tvAddNewCategory = view.findViewById(R.id.tv_add_new_category);
+        tvAddNewCategory.setOnClickListener(v -> showAddCategoryDialog());
     }
 
+    private void showAddCategoryDialog() {
+        // ★ Changed layout to dialog_add_expense_category
+        View v = LayoutInflater.from(requireContext())
+                .inflate(R.layout.dialog_add_expense_category, null, false);
+
+        EditText etName = v.findViewById(R.id.et_new_cat_name);
+        EditText etEmoji = v.findViewById(R.id.et_new_cat_emoji);
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("নতুন ক্যাটাগরি")
+                .setView(v)
+                .setPositiveButton("যোগ করুন", (d, w) -> {
+                    String name = etName.getText().toString().trim();
+                    String emoji = etEmoji.getText().toString().trim();
+
+                    if (name.isEmpty()) {
+                        Toast.makeText(requireContext(), "নাম দিন", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    if (emoji.isEmpty()) emoji = "🏷️";
+
+                    boolean success = dbHelper.addCategory(name, selectedType, emoji);
+
+                    if (success) {
+                        setupCategoriesFor(selectedType); // Refresh
+                        Toast.makeText(requireContext(), "যোগ করা হয়েছে", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(requireContext(), "এই ক্যাটাগরি আগে থেকেই আছে", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("বাতিল", null)
+                .show();
+    }
     private void prefillFromEditingExpense() {
         if (editingExpense == null) return;
 
@@ -240,30 +305,8 @@ public class AddExpenseFragment extends Fragment {
     }
 
     private void setupCategoriesFor(String type) {
-        Category[] categories;
-        if ("income".equals(type)) {
-            categories = new Category[]{
-                    new Category("বেতন", "বেতন", "💼"),
-                    new Category("বোনাস", "বোনাস", "🎁"),
-                    new Category("ফ্রিল্যান্স", "ফ্রিল্যান্স", "💻"),
-                    new Category("ব্যবসা", "ব্যবসা", "🏢"),
-                    new Category("উপহার", "উপহার", "🎀"),
-
-                    new Category("ভাড়া আয়", "ভাড়া", "🏘️"),
-                    new Category("অন্যান্য আয়", "অন্যান্য", "⚙️")
-            };
-        } else {
-            categories = new Category[]{
-                    new Category(getString(R.string.cat_food),      getString(R.string.cat_food_short),      "🍔"),
-                    new Category(getString(R.string.cat_grocery),   getString(R.string.cat_grocery_short),   "🛒"),
-                    new Category(getString(R.string.cat_transport), getString(R.string.cat_transport_short), "🚗"),
-                    new Category(getString(R.string.cat_rent),      getString(R.string.cat_rent_short),      "🏠"),
-                    new Category(getString(R.string.cat_health),    getString(R.string.cat_health_short),    "💊"),
-                    new Category(getString(R.string.cat_shopping),  getString(R.string.cat_shopping_short),  "🛍️"),
-                    new Category(getString(R.string.cat_education), getString(R.string.cat_education_short), "📚"),
-                    new Category(getString(R.string.cat_other),     getString(R.string.cat_other_short),     "⚙️")
-            };
-        }
+        // ★ Fetch dynamically from DB
+        List<Category> categories = dbHelper.getCategories(type);
 
         CategoryAdapter adapter = new CategoryAdapter(
                 requireContext(), categories, category -> {
@@ -274,9 +317,9 @@ public class AddExpenseFragment extends Fragment {
         rvCategories.setLayoutManager(new GridLayoutManager(requireContext(), 4));
         rvCategories.setAdapter(adapter);
 
-        if (editExpenseId <= 0) {
-            selectedCategory = categories[0].getName();
-            tvSelectedCategory.setText("নির্বাচিত: " + categories[0].getShortName());
+        if (editExpenseId <= 0 && !categories.isEmpty()) {
+            selectedCategory = categories.get(0).getName();
+            tvSelectedCategory.setText("নির্বাচিত: " + categories.get(0).getShortName());
         }
     }
 
@@ -475,6 +518,10 @@ public class AddExpenseFragment extends Fragment {
             expense.setDate(selectedTimestamp);
             expense.setItems(new ArrayList<>(addedItems));
             expense.setType(selectedType);
+
+            if (editExpenseId > 0 && editingExpense != null) {
+                expense.setLoanId(editingExpense.getLoanId());
+            }
 
             if (editExpenseId > 0) {
                 int rows = dbHelper.updateExpense(editExpenseId, expense);

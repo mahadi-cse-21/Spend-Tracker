@@ -1,7 +1,10 @@
 package com.diodeit.spendtrack.fragments;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,39 +18,43 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.diodeit.spendtrack.R;
 import com.diodeit.spendtrack.databases.DatabaseHelper;
 import com.diodeit.spendtrack.models.Expense;
+import com.diodeit.spendtrack.utils.BengaliNumberConverter;
 import com.diodeit.spendtrack.utils.CsvImporter;
 import com.diodeit.spendtrack.utils.ExportHelper;
 import com.diodeit.spendtrack.utils.PreferenceManager;
+import com.diodeit.spendtrack.utils.ReminderScheduler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.materialswitch.MaterialSwitch;
-
-import org.w3c.dom.Text;
+import com.google.android.material.timepicker.MaterialTimePicker;
+import com.google.android.material.timepicker.TimeFormat;
 
 import java.util.List;
+import java.util.Locale;
 
 public class SettingsFragment extends Fragment {
 
-    // ★ Replace these with your real contact info
     private static final String CONTACT_EMAIL = "mahadi.cse.21@gmail.com";
     private static final String CONTACT_PHONE = "+8801780689788";
-    private static final String CONTACT_WHATSAPP = "+8801780689788"; // no + sign
+    private static final String CONTACT_WHATSAPP = "+8801780689788";
 
-    // ★ Version name — onCreate এ পড়া হবে
     private String appVersionName = "2.2.0";
 
     private MaterialSwitch switchDailyReminder;
-    private LinearLayout rowBackup, rowRestore, rowClear, rowPrivacy, rowContact;
+    private LinearLayout rowDailyReminder, rowBackup, rowRestore, rowClear, rowPrivacy, rowContact;
+    private TextView tvReminderTime;
 
     private PreferenceManager prefManager;
     private DatabaseHelper dbHelper;
 
     private ActivityResultLauncher<String[]> csvPicker;
-    TextView version_name ;
+    private ActivityResultLauncher<String> requestPermissionLauncher;
+    TextView version_name;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -57,27 +64,28 @@ public class SettingsFragment extends Fragment {
                 new ActivityResultContracts.OpenDocument(),
                 uri -> { if (uri != null) performRestore(uri); });
 
+        requestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(), isGranted -> {
+                    if (isGranted) {
+                        ReminderScheduler.setDailyReminder(requireContext(), true);
+                    } else {
+                        Toast.makeText(requireContext(), "নোটিফিকেশন পারমিশন ছাড়া রিমাইন্ডার কাজ করবে না", Toast.LENGTH_LONG).show();
+                        switchDailyReminder.setChecked(false);
+                        prefManager.setDailyReminder(false);
+                    }
+                });
 
-        // ★ Version name এখানেই পড়ে নিলাম — একবারই
         readAppVersion();
-
     }
 
-    /**
-     * ★ PackageManager থেকে version name পড়া।
-     *   onCreate এ কল হয় — তাই Fragment সবসময় attached থাকে।
-     */
     private void readAppVersion() {
         try {
             appVersionName = requireContext()
                     .getPackageManager()
                     .getPackageInfo(requireContext().getPackageName(), 0)
                     .versionName;
-
-            Log.d("SpendTrack_Version", "Version name: " + appVersionName);
         } catch (Exception e) {
             Log.e("SpendTrack_Version", "Failed to read version name", e);
-            // fallback: appVersionName ডিফল্ট "2.2.0" ই থাকবে
         }
     }
 
@@ -89,7 +97,7 @@ public class SettingsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
         prefManager = new PreferenceManager(requireContext());
-        dbHelper = new DatabaseHelper(requireContext());
+        dbHelper = DatabaseHelper.get(requireContext());
         version_name = view.findViewById(R.id.version_name);
         version_name.setText(appVersionName);
 
@@ -102,6 +110,8 @@ public class SettingsFragment extends Fragment {
 
     private void initViews(View view) {
         switchDailyReminder = view.findViewById(R.id.switch_daily_reminder);
+        rowDailyReminder    = view.findViewById(R.id.row_daily_reminder);
+        tvReminderTime      = view.findViewById(R.id.tv_reminder_time);
         rowBackup           = view.findViewById(R.id.row_backup);
         rowRestore          = view.findViewById(R.id.row_restore);
         rowClear            = view.findViewById(R.id.row_clear);
@@ -110,12 +120,53 @@ public class SettingsFragment extends Fragment {
     }
 
     private void loadSettings() {
-        switchDailyReminder.setChecked(prefManager.isDailyReminderEnabled());
+        boolean isEnabled = prefManager.isDailyReminderEnabled();
+        switchDailyReminder.setChecked(isEnabled);
+        updateReminderTimeText();
+        ReminderScheduler.setDailyReminder(requireContext(), isEnabled);
+    }
+
+    private void updateReminderTimeText() {
+        int hour = prefManager.getReminderHour();
+        int minute = prefManager.getReminderMinute();
+
+        String period = hour >= 12 ? "বিকাল/রাত" : "সকাল";
+        int displayHour = hour % 12;
+        if (displayHour == 0) displayHour = 12;
+
+        BengaliNumberConverter bn = new BengaliNumberConverter();
+        String timeStr = bn.toBengali(String.valueOf(displayHour)) + ":" +
+                bn.toBengali(String.format(Locale.US, "%02d", minute));
+
+        tvReminderTime.setText(period + " " + timeStr + " টা");
     }
 
     private void setupClickListeners() {
-        switchDailyReminder.setOnCheckedChangeListener((buttonView, isChecked) ->
-                prefManager.setDailyReminder(isChecked));
+        switchDailyReminder.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            prefManager.setDailyReminder(isChecked);
+
+            if (isChecked) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS)
+                            != PackageManager.PERMISSION_GRANTED) {
+                        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
+                        return;
+                    }
+                }
+                ReminderScheduler.setDailyReminder(requireContext(), true);
+            } else {
+                ReminderScheduler.setDailyReminder(requireContext(), false);
+                Toast.makeText(requireContext(), "রিমাইন্ডার বন্ধ করা হয়েছে", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        rowDailyReminder.setOnClickListener(v -> {
+            if (!switchDailyReminder.isChecked()) {
+                switchDailyReminder.setChecked(true);
+                return;
+            }
+            showTimePicker();
+        });
 
         rowBackup.setOnClickListener(v -> exportBackup());
         rowRestore.setOnClickListener(v -> openCsvPicker());
@@ -124,9 +175,39 @@ public class SettingsFragment extends Fragment {
         rowContact.setOnClickListener(v -> showContactDialog());
     }
 
-    // ================================================================
-    // CONTACT DIALOG
-    // ================================================================
+    private void showTimePicker() {
+        int currentHour = prefManager.getReminderHour();
+        int currentMinute = prefManager.getReminderMinute();
+
+        MaterialTimePicker picker = new MaterialTimePicker.Builder()
+                .setTimeFormat(TimeFormat.CLOCK_12H)
+                .setHour(currentHour)
+                .setMinute(currentMinute)
+                .setTitleText("রিমাইন্ডারের সময় নির্বাচন করুন")
+                .build();
+
+        picker.addOnPositiveButtonClickListener(v -> {
+            int newHour = picker.getHour();
+            int newMinute = picker.getMinute();
+
+            prefManager.setReminderTime(newHour, newMinute);
+            updateReminderTimeText();
+            ReminderScheduler.setDailyReminder(requireContext(), true);
+
+            Toast.makeText(requireContext(), "সময় পরিবর্তন করা হয়েছে", Toast.LENGTH_SHORT).show();
+        });
+
+        picker.show(getParentFragmentManager(), "TIME_PICKER");
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (prefManager.isDailyReminderEnabled()) {
+            ReminderScheduler.setDailyReminder(requireContext(), true);
+        }
+    }
+
     private void showContactDialog() {
         String message =
                 "ডেভেলপার: মেহেদী হাসান\n\n" +
@@ -158,7 +239,6 @@ public class SettingsFragment extends Fragment {
                 .show();
     }
 
-    /** Opens the email app with the support address pre-filled. */
     private void sendEmail() {
         Intent intent = new Intent(Intent.ACTION_SENDTO);
         intent.setData(Uri.parse("mailto:" + CONTACT_EMAIL));
@@ -178,7 +258,6 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    /** Opens WhatsApp with the support number. */
     private void openWhatsApp() {
         try {
             String url = "https://wa.me/" + CONTACT_WHATSAPP +
@@ -192,7 +271,6 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    /** Opens the phone dialer with the support number. */
     private void dialPhone() {
         Intent intent = new Intent(Intent.ACTION_DIAL);
         intent.setData(Uri.parse("tel:" + CONTACT_PHONE));
@@ -205,7 +283,6 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    /** Opens the Play Store listing so users can leave a review. */
     private void openPlayStore() {
         try {
             String packageName = requireContext().getPackageName();
@@ -225,9 +302,6 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-    // ================================================================
-    // BACKUP / RESTORE / CLEAR / PRIVACY
-    // ================================================================
     private void exportBackup() {
         List<Expense> all = dbHelper.getAllExpenses();
         if (all == null || all.isEmpty()) {

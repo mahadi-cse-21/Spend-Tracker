@@ -13,6 +13,10 @@ public class PreferenceManager {
     private static final String KEY_VIBRATION = "vibration";
     private static final String KEY_SAFE_SPEND = "safe_spend";
 
+    // ★ NEW: Keys for Reminder Time
+    private static final String KEY_REMINDER_HOUR = "reminder_hour";
+    private static final String KEY_REMINDER_MINUTE = "reminder_minute";
+
     private final SharedPreferences prefs;
 
     public PreferenceManager(Context context) {
@@ -36,4 +40,11 @@ public class PreferenceManager {
 
     public boolean isSafeSpendEnabled() { return prefs.getBoolean(KEY_SAFE_SPEND, true); }
     public void setSafeSpend(boolean enabled) { prefs.edit().putBoolean(KEY_SAFE_SPEND, enabled).apply(); }
+
+    // ★ NEW: Reminder Time Methods
+    public int getReminderHour() { return prefs.getInt(KEY_REMINDER_HOUR, 20); } // Default 8:00 PM
+    public int getReminderMinute() { return prefs.getInt(KEY_REMINDER_MINUTE, 0); } // Default 0 minutes
+    public void setReminderTime(int hour, int minute) {
+        prefs.edit().putInt(KEY_REMINDER_HOUR, hour).putInt(KEY_REMINDER_MINUTE, minute).apply();
+    }
 }

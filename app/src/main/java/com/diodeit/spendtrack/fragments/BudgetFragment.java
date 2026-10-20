@@ -51,7 +51,7 @@ public class BudgetFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_budget, container, false);
 
-        dbHelper = new DatabaseHelper(requireContext());
+        dbHelper = DatabaseHelper.get(requireContext());
         bnConverter = new BengaliNumberConverter();
         prefManager = new PreferenceManager(requireContext());
         currentMonthKey = DateUtils.getMonthKey();

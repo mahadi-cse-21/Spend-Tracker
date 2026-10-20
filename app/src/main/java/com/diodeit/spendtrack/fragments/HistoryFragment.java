@@ -1,6 +1,8 @@
 package com.diodeit.spendtrack.fragments;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -38,14 +40,13 @@ import java.util.Locale;
 
 public class HistoryFragment extends Fragment {
 
-    private TextView tvCurrentMonth, tvTotalExpense, tvTotalTransactions;
+    private TextView tvCurrentMonth, tvTotalIncome, tvTotalExpense, tvTotalTransactions;
     private ImageView btnPrevMonth, btnNextMonth;
     private EditText etSearch;
     private ChipGroup cgFilters;
     private LinearLayout llEmptyState;
     private RecyclerView rvTransactions;
 
-    // ★ নতুন গ্রুপ অ্যাডাপ্টার — উপরে তারিখ, নিচে লেনদেন
     private TransactionGroupAdapter adapter;
 
     private DatabaseHelper dbHelper;
@@ -57,6 +58,14 @@ public class HistoryFragment extends Fragment {
     private List<Expense> filteredExpenses = new ArrayList<>();
     private String selectedFilter;
 
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private Runnable searchRunnable;
+
+    // ★ Dirty check variables
+    private int lastLoadedVersion = -1;
+    private int lastLoadedYear = -1;
+    private int lastLoadedMonth = -1;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -64,7 +73,7 @@ public class HistoryFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_history, container, false);
 
-        dbHelper = new DatabaseHelper(requireContext());
+        dbHelper = DatabaseHelper.get(requireContext());
         bnConverter = new BengaliNumberConverter();
         currentCal = Calendar.getInstance();
         monthFormat = new SimpleDateFormat("MMMM yyyy", new Locale("bn", "BD"));
@@ -82,6 +91,7 @@ public class HistoryFragment extends Fragment {
 
     private void initViews(View view) {
         tvCurrentMonth      = view.findViewById(R.id.tv_current_month);
+        tvTotalIncome       = view.findViewById(R.id.tv_total_income);
         tvTotalExpense      = view.findViewById(R.id.tv_total_expense);
         tvTotalTransactions = view.findViewById(R.id.tv_total_transactions);
         btnPrevMonth        = view.findViewById(R.id.btn_prev_month);
@@ -93,12 +103,10 @@ public class HistoryFragment extends Fragment {
     }
 
     private void setupRecyclerView() {
-        // ★ TransactionGroupAdapter — তারিখ হেডার + লেনদেন একসাথে দেখাবে
-        adapter = new TransactionGroupAdapter(requireContext(), expense -> {
-            ((MainActivity) requireActivity()).openDetailFragment(
-                    TransactionDetailFragment.newInstance(expense.getId()),
-                    "TRANSACTION_DETAIL");
-        });
+        adapter = new TransactionGroupAdapter(requireContext(), expense ->
+                ((MainActivity) requireActivity()).openDetailFragment(
+                        TransactionDetailFragment.newInstance(expense.getId()),
+                        "TRANSACTION_DETAIL"));
         rvTransactions.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvTransactions.setAdapter(adapter);
     }
@@ -106,9 +114,7 @@ public class HistoryFragment extends Fragment {
     private void setupFilterChips() {
         String[] filters = {
                 getString(R.string.all_categories),
-                "খরচ",
-                "আয়",
-                "ঋণ",
+                "খরচ", "আয়", "ঋণ",
                 getString(R.string.pay_cash_short)
         };
         for (String filter : filters) {
@@ -131,68 +137,103 @@ public class HistoryFragment extends Fragment {
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override public void onTextChanged(CharSequence s, int start, int before, int count) {
-                applyFilters();
+                if (searchRunnable != null) mainHandler.removeCallbacks(searchRunnable);
+                searchRunnable = HistoryFragment.this::applyFilters;
+                mainHandler.postDelayed(searchRunnable, 250); // Debounce
             }
             @Override public void afterTextChanged(Editable s) {}
         });
     }
 
     private void loadTransactions() {
-        int year = currentCal.get(Calendar.YEAR);
-        int month = currentCal.get(Calendar.MONTH);
+        final int year  = currentCal.get(Calendar.YEAR);
+        final int month = currentCal.get(Calendar.MONTH);
 
-        allExpenses = dbHelper.getMonthExpenses(year, month);
+        // ★ Dirty check - do not load if nothing changed and same month
+        int v = dbHelper.getDataVersion();
+        if (v == lastLoadedVersion && year == lastLoadedYear && month == lastLoadedMonth) {
+            return;
+        }
+        lastLoadedVersion = v;
+        lastLoadedYear = year;
+        lastLoadedMonth = month;
 
         tvCurrentMonth.setText(bnConverter.toBengali(monthFormat.format(currentCal.getTime())));
 
-        applyFilters();
+        // ★ Run DB query in background
+        MainActivity.io().execute(() -> {
+            // Uses the monthCache inside DatabaseHelper
+            List<Expense> list = dbHelper.getMonthExpenses(year, month);
+            mainHandler.post(() -> {
+                if (!isAdded()) return;
+                allExpenses = list;
+                applyFilters();
+            });
+        });
     }
 
     private void applyFilters() {
-        String query = etSearch.getText().toString().toLowerCase();
-        filteredExpenses = new ArrayList<>();
-        double income = 0, expense = 0;
+        if (getView() == null) return;
 
-        for (Expense e : allExpenses) {
-            String cat = e.getCategory() != null ? e.getCategory() : "";
-            String summary = e.getItemsSummary() != null ? e.getItemsSummary() : "";
-            String note = e.getNote() != null ? e.getNote() : "";
-            String pay = e.getPaymentMethod() != null ? e.getPaymentMethod() : "";
+        final String query = etSearch.getText().toString().toLowerCase();
+        final String filter = selectedFilter;
+        final List<Expense> source = allExpenses;
+        final String allCategories = getString(R.string.all_categories);
 
-            boolean matchesQuery =
-                    cat.toLowerCase().contains(query) ||
-                            summary.toLowerCase().contains(query) ||
-                            note.toLowerCase().contains(query);
+        // ★ Run filtering in background
+        MainActivity.io().execute(() -> {
+            List<Expense> filtered = new ArrayList<>();
+            double income = 0, expense = 0;
 
-            boolean matchesFilter;
-            if (selectedFilter.equals(getString(R.string.all_categories))) {
-                matchesFilter = true;
-            } else if (selectedFilter.equals("খরচ")) {
-                matchesFilter = !e.isIncome();
-            } else if (selectedFilter.equals("আয়")) {
-                matchesFilter = e.isIncome();
-            } else if (selectedFilter.equals("ঋণ")) {
-                matchesFilter = cat.equals("ঋণ") || cat.equals("ঋণ পরিশোধ");
-            } else {
-                matchesFilter = cat.contains(selectedFilter) || pay.contains(selectedFilter);
+            for (Expense e : source) {
+                String cat = e.getCategory() != null ? e.getCategory() : "";
+                String summary = e.getItemsSummary() != null ? e.getItemsSummary() : "";
+                String note = e.getNote() != null ? e.getNote() : "";
+                String pay = e.getPaymentMethod() != null ? e.getPaymentMethod() : "";
+
+                boolean matchesQuery =
+                        cat.toLowerCase().contains(query) ||
+                                summary.toLowerCase().contains(query) ||
+                                note.toLowerCase().contains(query);
+
+                boolean matchesFilter;
+                if (filter.equals(allCategories)) {
+                    matchesFilter = true;
+                } else if (filter.equals("খরচ")) {
+                    matchesFilter = !e.isIncome();
+                } else if (filter.equals("আয়")) {
+                    matchesFilter = e.isIncome();
+                } else if (filter.equals("ঋণ")) {
+                    matchesFilter = cat.equals("ঋণ") || cat.equals("ঋণ পরিশোধ");
+                } else {
+                    matchesFilter = cat.contains(filter) || pay.contains(filter);
+                }
+
+                if (matchesQuery && matchesFilter) {
+                    filtered.add(e);
+                    if (e.isIncome()) income += e.getAmount();
+                    else              expense += e.getAmount();
+                }
             }
 
-            if (matchesQuery && matchesFilter) {
-                filteredExpenses.add(e);
-                if (e.isIncome()) income += e.getAmount();
-                else              expense += e.getAmount();
-            }
-        }
+            final List<Expense> result = filtered;
+            final double fIncome = income, fExpense = expense;
 
-        // ★ গ্রুপ অ্যাডাপ্টারে পাঠাই — তারিখ হেডার সহ
-        adapter.setExpenses(filteredExpenses);
+            mainHandler.post(() -> {
+                if (!isAdded() || getView() == null) return;
+                filteredExpenses = result;
 
-        tvTotalExpense.setText(
-                "আয় " + bnConverter.formatCurrency(income)
-                        + "  |  ব্যয় " + bnConverter.formatCurrency(expense));
-        tvTotalTransactions.setText(
-                getString(R.string.entries, bnConverter.toBengali(filteredExpenses.size())));
-        toggleEmptyState(filteredExpenses.isEmpty());
+                // DiffUtil in adapter handles this extremely fast
+                adapter.setExpenses(result);
+
+                if (tvTotalIncome != null) tvTotalIncome.setText(bnConverter.formatCurrency(fIncome));
+                if (tvTotalExpense != null) tvTotalExpense.setText(bnConverter.formatCurrency(fExpense));
+                if (tvTotalTransactions != null) tvTotalTransactions.setText(
+                        getString(R.string.entries, bnConverter.toBengali(result.size())));
+
+                toggleEmptyState(result.isEmpty());
+            });
+        });
     }
 
     private void toggleEmptyState(boolean show) {
@@ -203,18 +244,17 @@ public class HistoryFragment extends Fragment {
     private void setupClickListeners(View view) {
         btnPrevMonth.setOnClickListener(v -> {
             currentCal.add(Calendar.MONTH, -1);
+            lastLoadedVersion = -1; // Force reload
             loadTransactions();
         });
         btnNextMonth.setOnClickListener(v -> {
             currentCal.add(Calendar.MONTH, 1);
+            lastLoadedVersion = -1; // Force reload
             loadTransactions();
         });
         view.findViewById(R.id.fab_export).setOnClickListener(v -> showExportSheet());
     }
 
-    // ═══════════════════════════════════════════════════════════
-    // EXPORT SHEET
-    // ═══════════════════════════════════════════════════════════
     private void showExportSheet() {
         View sheetView = getLayoutInflater().inflate(R.layout.dialog_export, null);
         BottomSheetDialog dialog = new BottomSheetDialog(requireContext());
@@ -222,54 +262,44 @@ public class HistoryFragment extends Fragment {
 
         sheetView.findViewById(R.id.btn_close_export).setOnClickListener(v -> dialog.dismiss());
 
-        // ─── PDF EXPORT ───
         sheetView.findViewById(R.id.btn_export_pdf).setOnClickListener(v -> {
             if (filteredExpenses == null || filteredExpenses.isEmpty()) {
-                Toast.makeText(requireContext(),
-                        "কোনো লেনদেন নেই", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "কোনো লেনদেন নেই", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             double income = 0, expense = 0;
             for (Expense e : filteredExpenses) {
                 if (e.isIncome()) income += e.getAmount();
                 else              expense += e.getAmount();
             }
             double balance = income - expense;
-
             String label = bnConverter.toBengali(monthFormat.format(currentCal.getTime()));
-
-            boolean ok = ExportHelper.exportPdf(
-                    requireContext(),
-                    filteredExpenses,
+            boolean ok = ExportHelper.exportPdf(requireContext(), filteredExpenses,
                     income, expense, balance, label);
-
             Toast.makeText(requireContext(),
-                    ok ? "পিডিএফ ডাউনলোড সম্পন্ন — Downloads/SpendTrack"
-                            : "পিডিএফ তৈরি ব্যর্থ",
+                    ok ? "পিডিএফ ডাউনলোড সম্পন্ন — Downloads/SpendTrack" : "পিডিএফ তৈরি ব্যর্থ",
                     Toast.LENGTH_LONG).show();
-
             if (ok) dialog.dismiss();
         });
 
-        // ─── CSV EXPORT ───
         sheetView.findViewById(R.id.btn_export_csv).setOnClickListener(v -> {
             if (filteredExpenses == null || filteredExpenses.isEmpty()) {
-                Toast.makeText(requireContext(),
-                        "কোনো লেনদেন নেই", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "কোনো লেনদেন নেই", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             boolean ok = ExportHelper.exportCsv(requireContext(), filteredExpenses);
-
             Toast.makeText(requireContext(),
-                    ok ? "ব্যাকআপ সম্পন্ন — Downloads/SpendTrack"
-                            : "ব্যাকআপ তৈরি ব্যর্থ",
+                    ok ? "ব্যাকআপ সম্পন্ন — Downloads/SpendTrack" : "ব্যাকআপ তৈরি ব্যর্থ",
                     Toast.LENGTH_LONG).show();
-
             if (ok) dialog.dismiss();
         });
 
         dialog.show();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadTransactions();
     }
 }
