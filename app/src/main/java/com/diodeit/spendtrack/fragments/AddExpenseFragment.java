@@ -1,9 +1,11 @@
 package com.diodeit.spendtrack.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -32,7 +34,6 @@ import com.diodeit.spendtrack.models.Category;
 import com.diodeit.spendtrack.models.Expense;
 import com.diodeit.spendtrack.models.ExpenseItem;
 import com.diodeit.spendtrack.utils.BengaliNumberConverter;
-import com.diodeit.spendtrack.utils.DateUtils;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -95,14 +96,11 @@ public class AddExpenseFragment extends Fragment {
             );
 
             if (isLoanLinked) {
-                Toast.makeText(requireContext(),
-                        "ঋণ-সংযুক্ত লেনদেন এখানে এডিট করা যায় না",
-                        Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), "ঋণ সম্পর্কিত খরচ এডিট করা যাবে না", Toast.LENGTH_LONG).show();
                 new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("ঋণ-সংযুক্ত লেনদেন")
-                        .setMessage("এই লেনদেনটি একটি ঋণের সাথে সংযুক্ত। " +
-                                "ঋণ এডিট করতে 'ঋণের হিসাব' স্ক্রিনে যান।")
-                        .setPositiveButton("ঋণের হিসাবে যান", (d, w) -> {
+                        .setTitle("ঋণ লিংকড")
+                        .setMessage("এই লেনদেনটি ঋণের সাথে যুক্ত। এটি এডিট করতে ঋণ সেকশনে যান।")
+                        .setPositiveButton("ঋণে যান", (d, w) -> {
                             requireActivity().onBackPressed();
                             ((MainActivity) requireActivity())
                                     .openDetailFragment(new LoansFragment(), "LOANS");
@@ -165,7 +163,7 @@ public class AddExpenseFragment extends Fragment {
         toolbar            = view.findViewById(R.id.toolbar);
 
         if (editExpenseId > 0 && toolbar != null) {
-            toolbar.setTitle("এডিট করুন");
+            toolbar.setTitle("খরচ এডিট করুন");
         }
 
         amountWatcher = new android.text.TextWatcher() {
@@ -200,13 +198,14 @@ public class AddExpenseFragment extends Fragment {
         etAmount.setOnFocusChangeListener(scrollToFocused);
         etName.setOnFocusChangeListener(scrollToFocused);
 
-        // ★ Add category button listener
         TextView tvAddNewCategory = view.findViewById(R.id.tv_add_new_category);
-        tvAddNewCategory.setOnClickListener(v -> showAddCategoryDialog());
+        if (tvAddNewCategory != null) {
+            tvAddNewCategory.setText("+ নতুন ক্যাটাগরি");
+            tvAddNewCategory.setOnClickListener(v -> showAddCategoryDialog());
+        }
     }
 
     private void showAddCategoryDialog() {
-        // ★ Changed layout to dialog_add_expense_category
         View v = LayoutInflater.from(requireContext())
                 .inflate(R.layout.dialog_add_expense_category, null, false);
 
@@ -229,15 +228,16 @@ public class AddExpenseFragment extends Fragment {
                     boolean success = dbHelper.addCategory(name, selectedType, emoji);
 
                     if (success) {
-                        setupCategoriesFor(selectedType); // Refresh
-                        Toast.makeText(requireContext(), "যোগ করা হয়েছে", Toast.LENGTH_SHORT).show();
+                        setupCategoriesFor(selectedType);
+                        Toast.makeText(requireContext(), "যোগ করা হয়েছে", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(requireContext(), "এই ক্যাটাগরি আগে থেকেই আছে", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "ইতিমধ্যে আছে", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .setNegativeButton("বাতিল", null)
                 .show();
     }
+
     private void prefillFromEditingExpense() {
         if (editingExpense == null) return;
 
@@ -269,8 +269,7 @@ public class AddExpenseFragment extends Fragment {
         updateTotalAndVisibility();
 
         if (btnSave != null) {
-            btnSave.setText(selectedType.equals("income")
-                    ? "আয় আপডেট করুন" : "খরচ আপডেট করুন");
+            btnSave.setText(selectedType.equals("income") ? "আয় আপডেট করুন" : "খরচ আপডেট করুন");
         }
     }
 
@@ -291,11 +290,9 @@ public class AddExpenseFragment extends Fragment {
 
                 if (btnSave != null) {
                     if (editExpenseId > 0) {
-                        btnSave.setText(selectedType.equals("income")
-                                ? "আয় আপডেট করুন" : "খরচ আপডেট করুন");
+                        btnSave.setText(selectedType.equals("income") ? "আয় আপডেট করুন" : "খরচ আপডেট করুন");
                     } else {
-                        btnSave.setText(selectedType.equals("income")
-                                ? "আয় সংরক্ষণ করুন" : "খরচ সংরক্ষণ করুন");
+                        btnSave.setText(selectedType.equals("income") ? "আয় সেভ করুন" : "খরচ সেভ করুন");
                     }
                 }
             }
@@ -305,7 +302,6 @@ public class AddExpenseFragment extends Fragment {
     }
 
     private void setupCategoriesFor(String type) {
-        // ★ Fetch dynamically from DB
         List<Category> categories = dbHelper.getCategories(type);
 
         CategoryAdapter adapter = new CategoryAdapter(
@@ -365,28 +361,25 @@ public class AddExpenseFragment extends Fragment {
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle("আইটেম এডিট করুন")
                 .setView(container)
-                .setPositiveButton("সংরক্ষণ", (d, w) -> {
+                .setPositiveButton("সেভ করুন", (d, w) -> {
                     String newName = etNameD.getText().toString().trim();
                     String amtStr = etAmountD.getText().toString().trim();
                     if (newName.isEmpty() || amtStr.isEmpty()) {
-                        Toast.makeText(requireContext(),
-                                "নাম ও পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "নাম ও পরিমাণ দিন", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     double newAmount;
                     try {
                         newAmount = Double.parseDouble(bn.toEnglish(amtStr));
                     } catch (NumberFormatException ex) {
-                        Toast.makeText(requireContext(),
-                                "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
                         return;
                     }
                     item.setName(newName);
                     item.setAmount(newAmount);
                     addedAdapter.notifyItemChanged(index);
                     updateTotalAndVisibility();
-                    Toast.makeText(requireContext(),
-                            "আইটেম আপডেট হয়েছে", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "আপডেট হয়েছে", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("বাতিল", null)
                 .show();
@@ -423,15 +416,11 @@ public class AddExpenseFragment extends Fragment {
 
         String dateStr;
         if (isToday) {
-            dateStr = "আজ, " + DateUtils.getBengaliMonth(sel.get(Calendar.MONTH))
-                    + " " + bn.toBengali(sel.get(Calendar.DAY_OF_MONTH));
+            dateStr = "আজ, " + sel.get(Calendar.DAY_OF_MONTH);
         } else if (isYesterday) {
-            dateStr = "গতকাল, " + DateUtils.getBengaliMonth(sel.get(Calendar.MONTH))
-                    + " " + bn.toBengali(sel.get(Calendar.DAY_OF_MONTH));
+            dateStr = "গতকাল, " + sel.get(Calendar.DAY_OF_MONTH);
         } else {
-            dateStr = bn.toBengali(sel.get(Calendar.DAY_OF_MONTH)) + " "
-                    + DateUtils.getBengaliMonth(sel.get(Calendar.MONTH)) + " "
-                    + bn.toBengali(sel.get(Calendar.YEAR));
+            dateStr = sel.get(Calendar.DAY_OF_MONTH) + "/" + (sel.get(Calendar.MONTH) + 1) + "/" + sel.get(Calendar.YEAR);
         }
         tvSelectedDate.setText(dateStr);
     }
@@ -442,18 +431,17 @@ public class AddExpenseFragment extends Fragment {
             String name = etName.getText().toString().trim();
 
             if (amountStr.isEmpty()) {
-                Toast.makeText(requireContext(), "পরিমাণ লিখুন", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "পরিমাণ দিন", Toast.LENGTH_SHORT).show();
                 return;
             }
             if (name.isEmpty()) {
-                Toast.makeText(requireContext(), "নাম লিখুন", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "নাম দিন", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             double amount = parseAmount(amountStr);
             if (amount <= 0) {
-                Toast.makeText(requireContext(),
-                        "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -487,26 +475,33 @@ public class AddExpenseFragment extends Fragment {
     }
 
     private void setupSaveButton() {
-        btnSave.setText(editExpenseId > 0 ? "খরচ আপডেট করুন" : "খরচ সংরক্ষণ করুন");
+        btnSave.setText(editExpenseId > 0 ? "আপডেট করুন" : "সেভ করুন");
 
         btnSave.setOnClickListener(v -> {
+            // ১. কীবোর্ড হাইড করুন
+            InputMethodManager imm = (InputMethodManager) requireContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+            }
+            v.clearFocus();
+
+            // ২. ডেটা ভ্যালিডেশন
             if (addedItems.isEmpty()) {
                 String amountStr = etAmount.getText().toString().trim();
                 String name = etName.getText().toString().trim();
                 if (amountStr.isEmpty() || name.isEmpty()) {
-                    Toast.makeText(requireContext(),
-                            "কমপক্ষে একটি আইটেম যোগ করুন", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "কমপক্ষে একটি আইটেম যোগ করুন", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 double amount = parseAmount(amountStr);
                 if (amount <= 0) {
-                    Toast.makeText(requireContext(),
-                            "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
                     return;
                 }
                 addedItems.add(new ExpenseItem(name, amount));
             }
 
+            // ৩. ডেটাবেসে সেভ করুন
             double total = 0;
             for (ExpenseItem i : addedItems) total += i.getAmount();
 
@@ -526,27 +521,27 @@ public class AddExpenseFragment extends Fragment {
             if (editExpenseId > 0) {
                 int rows = dbHelper.updateExpense(editExpenseId, expense);
                 if (rows > 0) {
-                    Toast.makeText(requireContext(),
-                            "সফলভাবে আপডেট হয়েছে", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "আপডেট সফল হয়েছে", Toast.LENGTH_SHORT).show();
                     requireActivity().onBackPressed();
                 } else {
-                    Toast.makeText(requireContext(),
-                            "আপডেট ব্যর্থ হয়েছে", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "আপডেট ব্যর্থ হয়েছে", Toast.LENGTH_SHORT).show();
                 }
             } else {
                 long id = dbHelper.addExpense(expense);
                 if (id > 0) {
-                    String msg = selectedType.equals("income")
-                            ? addedItems.size() + "টি আয় সংরক্ষিত হয়েছে"
-                            : addedItems.size() + "টি খরচ সংরক্ষিত হয়েছে";
-                    Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "সফলভাবে যোগ করা হয়েছে", Toast.LENGTH_SHORT).show();
+                    addedItems.clear();
 
+                    // ৪. কীবোর্ড বন্ধ হওয়ার জন্য ২০০ মিলিসেকেন্ড অপেক্ষা করে হোমে যান
                     if (getActivity() instanceof MainActivity) {
-                        ((MainActivity) requireActivity()).navigateToTab("HOME");
+                        v.postDelayed(() -> {
+                            if (isAdded()) {
+                                ((MainActivity) requireActivity()).navigateToTab("HOME");
+                            }
+                        }, 200);
                     }
                 } else {
-                    Toast.makeText(requireContext(),
-                            "সংরক্ষণ ব্যর্থ হয়েছে", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "সেভ করতে ব্যর্থ হয়েছে", Toast.LENGTH_SHORT).show();
                 }
             }
         });
@@ -561,7 +556,7 @@ public class AddExpenseFragment extends Fragment {
         for (ExpenseItem i : addedItems) total += i.getAmount();
         if (tvTotalAmount != null) {
             tvTotalAmount.setText("৳ " + bn.toBengali(
-                    String.format(Locale.US, "%,.0f", total)));
+                    String.format(Locale.US, "%.0f", total)));
         }
     }
 }

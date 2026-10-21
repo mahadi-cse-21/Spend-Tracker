@@ -7,17 +7,20 @@
     android:orientation="vertical"
     android:background="@color/surface">
 
+    <!-- Fragment Container -->
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1" />
 
+    <!-- Bottom Navigation View -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/surface_container_lowest"
+        app:elevation="8dp"
         app:menu="@menu/bottom_nav_menu"
         app:labelVisibilityMode="labeled"
         app:itemIconTint="@color/primary"

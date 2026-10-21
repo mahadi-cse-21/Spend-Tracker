@@ -1,11 +1,12 @@
 package com.diodeit.spendtrack;
 
+import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewTreeObserver;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -19,9 +20,11 @@ import com.diodeit.spendtrack.fragments.AnalyticsFragment;
 import com.diodeit.spendtrack.fragments.HistoryFragment;
 import com.diodeit.spendtrack.fragments.HomeFragment;
 import com.diodeit.spendtrack.fragments.SettingsFragment;
+import com.diodeit.spendtrack.utils.PreferenceManager;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -34,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_ANALYTICS = "ANALYTICS";
     private static final String TAG_SETTINGS  = "SETTINGS";
 
-    // ★ Shared IO pool — one place, no shutdown per fragment
     private static final ExecutorService IO = Executors.newFixedThreadPool(2);
     public static ExecutorService io() { return IO; }
 
@@ -44,8 +46,29 @@ public class MainActivity extends AppCompatActivity {
     private int lastKeyboardState = -1;
 
     private DatabaseHelper dbHelper;
+
     private final Map<String, Fragment> tabFragments = new HashMap<>();
     private String activeTabTag = null;
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        PreferenceManager prefManager = new PreferenceManager(newBase);
+        String lang = prefManager.getLanguage();
+
+        Locale locale = "en".equals(lang)
+                ? new Locale("en", "US")
+                : new Locale("bn", "BD");
+
+        Locale.setDefault(locale);
+
+        Configuration config = new Configuration(newBase.getResources().getConfiguration());
+        config.fontScale = 1.0f;
+        config.setLocale(locale);
+        config.setLayoutDirection(locale);
+
+        Context context = newBase.createConfigurationContext(config);
+        super.attachBaseContext(context);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
         fragmentManager = getSupportFragmentManager();
         dbHelper = DatabaseHelper.get(this);
+
         IO.execute(() -> dbHelper.ensureIndexes());
 
         initViews();
@@ -65,9 +89,19 @@ public class MainActivity extends AppCompatActivity {
             showTab(TAG_HOME);
             selectNavItem(TAG_HOME);
         } else {
-            String top = readTopTag();
-            currentTag = top != null ? top : TAG_HOME;
-            activeTabTag = isTabTag(currentTag) ? currentTag : null;
+            tabFragments.clear();
+            for (Fragment f : fragmentManager.getFragments()) {
+                if (f != null && f.getTag() != null && isTabTag(f.getTag())) {
+                    tabFragments.put(f.getTag(), f);
+                    if (f.isVisible()) {
+                        activeTabTag = f.getTag();
+                    }
+                }
+            }
+            if (activeTabTag == null) {
+                activeTabTag = TAG_HOME;
+            }
+            currentTag = activeTabTag;
             selectNavItem(currentTag);
         }
     }
@@ -98,37 +132,69 @@ public class MainActivity extends AppCompatActivity {
             fragmentManager.popBackStackImmediate(null,
                     FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
-        if (tag.equals(activeTabTag)) {
-            selectNavItem(tag);
-            return;
+
+        // ADD এবং HOME ট্যাবে ক্লিক করলে পুরনো ফ্র্যাগমেন্ট রিমুভ করে নতুন তৈরি করব
+        if (TAG_ADD.equals(tag) || TAG_HOME.equals(tag)) {
+            Fragment oldFrag = tabFragments.remove(tag);
+            if (oldFrag != null) {
+                FragmentTransaction tx = fragmentManager.beginTransaction();
+                tx.remove(oldFrag);
+                tx.commitNowAllowingStateLoss();
+            }
         }
+
         showTab(tag);
         selectNavItem(tag);
     }
 
     private void showTab(String tag) {
         Fragment target = tabFragments.get(tag);
-        FragmentTransaction tx = fragmentManager.beginTransaction();
 
-        // ★ Removed tx.setCustomAnimations() here to make tab switching INSTANT.
-        // Animations on tab switches often cause perceived lag.
+        if (target != null && (target.getView() == null || !target.isAdded())) {
+            FragmentTransaction removeTx = fragmentManager.beginTransaction();
+            removeTx.remove(target);
+            removeTx.commitNowAllowingStateLoss();
+            tabFragments.remove(tag);
+            target = null;
+        }
+
+        FragmentTransaction tx = fragmentManager.beginTransaction();
 
         if (target == null) {
             target = createFragmentForTag(tag);
             if (target == null) return;
             tabFragments.put(tag, target);
             tx.add(R.id.fragment_container, target, tag);
+        } else {
+            if (target.isHidden()) {
+                tx.show(target);
+            }
         }
+
         if (activeTabTag != null && !activeTabTag.equals(tag)) {
             Fragment current = tabFragments.get(activeTabTag);
-            if (current != null && current.isAdded()) tx.hide(current);
+            if (current != null && current.isAdded() && current.getView() != null) {
+                tx.hide(current);
+            }
         }
-        if (target.isAdded()) tx.show(target);
 
-        tx.commitNow(); // commitNow applies the change immediately without waiting for the next frame
+        tx.commitNow();
         activeTabTag = tag;
         currentTag = tag;
     }
+
+    public void clearAllFragments() {
+        if (fragmentManager == null) return;
+        fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        FragmentTransaction tx = fragmentManager.beginTransaction();
+        for (Fragment fragment : fragmentManager.getFragments()) {
+            tx.remove(fragment);
+        }
+        tx.commitNowAllowingStateLoss();
+        tabFragments.clear();
+        activeTabTag = null;
+    }
+
     private Fragment createFragmentForTag(String tag) {
         switch (tag) {
             case TAG_HOME:      return new HomeFragment();
@@ -238,6 +304,8 @@ public class MainActivity extends AppCompatActivity {
     private void setNavVisible(boolean visible) {
         if (bottomNav == null) return;
         int target = visible ? View.VISIBLE : View.GONE;
-        if (bottomNav.getVisibility() != target) bottomNav.setVisibility(target);
+        if (bottomNav.getVisibility() != target) {
+            bottomNav.setVisibility(target);
+        }
     }
 }
