@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.utils;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.content.Context;
 import android.net.Uri;
 import android.widget.Toast;
@@ -40,14 +42,14 @@ public class CsvImporter {
                      new InputStreamReader(is, StandardCharsets.UTF_8))) {
 
             if (reader == null) {
-                Toast.makeText(context, "ফাইল খোলা যায়নি", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, Tr.t("ফাইল খোলা যায়নি"), Toast.LENGTH_SHORT).show();
                 return -1;
             }
 
             // Read the BOM-stripped header line
             String header = reader.readLine();
             if (header == null) {
-                Toast.makeText(context, "ফাইল খালি", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, Tr.t("ফাইল খালি"), Toast.LENGTH_SHORT).show();
                 return -1;
             }
             // Strip UTF-8 BOM if present
@@ -57,7 +59,7 @@ public class CsvImporter {
             // Sanity check
             if (!header.toLowerCase(Locale.US).startsWith("id,")) {
                 Toast.makeText(context,
-                        "সঠিক ব্যাকআপ ফাইল নয়", Toast.LENGTH_LONG).show();
+                        Tr.t("সঠিক ব্যাকআপ ফাইল নয়"), Toast.LENGTH_LONG).show();
                 return -1;
             }
 
@@ -76,7 +78,7 @@ public class CsvImporter {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            Toast.makeText(context, "ইমপোর্ট ব্যর্থ: " + ex.getMessage(),
+            Toast.makeText(context, Tr.t("ইমপোর্ট ব্যর্থ: ") + ex.getMessage(),
                     Toast.LENGTH_LONG).show();
             return -1;
         }

@@ -16,16 +16,27 @@ public class DateUtils {
             "রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার", "শনিবার"
     };
 
+    private static final String[] ENGLISH_MONTHS = {
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+    };
+
+    private static final String[] ENGLISH_DAYS = {
+            "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+    };
+
+    // Returns the month name in the current app language (Bangla or English)
     public static String getBengaliMonth(int month) {
         if (month >= 0 && month < 12) {
-            return BENGALI_MONTHS[month];
+            return Tr.isEnglish() ? ENGLISH_MONTHS[month] : BENGALI_MONTHS[month];
         }
         return "";
     }
 
+    // Returns the weekday name in the current app language
     public static String getBengaliDay(int dayOfWeek) {
         if (dayOfWeek >= 1 && dayOfWeek <= 7) {
-            return BENGALI_DAYS[dayOfWeek - 1];
+            return Tr.isEnglish() ? ENGLISH_DAYS[dayOfWeek - 1] : BENGALI_DAYS[dayOfWeek - 1];
         }
         return "";
     }

@@ -3,21 +3,21 @@
     <item
         android:id="@+id/nav_home"
         android:icon="@drawable/ic_account_balance_wallet"
-        android:title="হোম" />
+        android:title="@string/nav_home" />
     <item
         android:id="@+id/nav_history"
         android:icon="@drawable/ic_receipt_long"
-        android:title="ইতিহাস" />
+        android:title="@string/nav_history" />
     <item
         android:id="@+id/nav_add"
         android:icon="@drawable/ic_add"
-        android:title="যুক্ত করুন" />
+        android:title="@string/nav_add" />
     <item
         android:id="@+id/nav_analytics"
         android:icon="@drawable/ic_pie_chart"
-        android:title="পরিসংখ্যান" />
+        android:title="@string/nav_analytics" />
     <item
         android:id="@+id/nav_settings"
         android:icon="@drawable/ic_settings"
-        android:title="সেটিংস" />
+        android:title="@string/nav_settings" />
 </menu>

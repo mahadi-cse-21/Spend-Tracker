@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.fragments;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -96,16 +98,16 @@ public class AddExpenseFragment extends Fragment {
             );
 
             if (isLoanLinked) {
-                Toast.makeText(requireContext(), "ঋণ সম্পর্কিত খরচ এডিট করা যাবে না", Toast.LENGTH_LONG).show();
+                Toast.makeText(requireContext(), Tr.t("ঋণ সম্পর্কিত খরচ এডিট করা যাবে না"), Toast.LENGTH_LONG).show();
                 new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("ঋণ লিংকড")
-                        .setMessage("এই লেনদেনটি ঋণের সাথে যুক্ত। এটি এডিট করতে ঋণ সেকশনে যান।")
-                        .setPositiveButton("ঋণে যান", (d, w) -> {
+                        .setTitle(Tr.t("ঋণ লিংকড"))
+                        .setMessage(Tr.t("এই লেনদেনটি ঋণের সাথে যুক্ত। এটি এডিট করতে ঋণ সেকশনে যান।"))
+                        .setPositiveButton(Tr.t("ঋণে যান"), (d, w) -> {
                             requireActivity().onBackPressed();
                             ((MainActivity) requireActivity())
                                     .openDetailFragment(new LoansFragment(), "LOANS");
                         })
-                        .setNegativeButton("বাতিল", (d, w) -> requireActivity().onBackPressed())
+                        .setNegativeButton(Tr.t("বাতিল"), (d, w) -> requireActivity().onBackPressed())
                         .setCancelable(false)
                         .show();
                 return view;
@@ -163,7 +165,7 @@ public class AddExpenseFragment extends Fragment {
         toolbar            = view.findViewById(R.id.toolbar);
 
         if (editExpenseId > 0 && toolbar != null) {
-            toolbar.setTitle("খরচ এডিট করুন");
+            toolbar.setTitle(Tr.t("খরচ এডিট করুন"));
         }
 
         amountWatcher = new android.text.TextWatcher() {
@@ -200,7 +202,7 @@ public class AddExpenseFragment extends Fragment {
 
         TextView tvAddNewCategory = view.findViewById(R.id.tv_add_new_category);
         if (tvAddNewCategory != null) {
-            tvAddNewCategory.setText("+ নতুন ক্যাটাগরি");
+            tvAddNewCategory.setText(Tr.t("+ নতুন ক্যাটাগরি"));
             tvAddNewCategory.setOnClickListener(v -> showAddCategoryDialog());
         }
     }
@@ -213,14 +215,14 @@ public class AddExpenseFragment extends Fragment {
         EditText etEmoji = v.findViewById(R.id.et_new_cat_emoji);
 
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("নতুন ক্যাটাগরি")
+                .setTitle(Tr.t("নতুন ক্যাটাগরি"))
                 .setView(v)
-                .setPositiveButton("যোগ করুন", (d, w) -> {
+                .setPositiveButton(Tr.t("যোগ করুন"), (d, w) -> {
                     String name = etName.getText().toString().trim();
                     String emoji = etEmoji.getText().toString().trim();
 
                     if (name.isEmpty()) {
-                        Toast.makeText(requireContext(), "নাম দিন", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), Tr.t("নাম দিন"), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     if (emoji.isEmpty()) emoji = "🏷️";
@@ -229,12 +231,12 @@ public class AddExpenseFragment extends Fragment {
 
                     if (success) {
                         setupCategoriesFor(selectedType);
-                        Toast.makeText(requireContext(), "যোগ করা হয়েছে", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), Tr.t("যোগ করা হয়েছে"), Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(requireContext(), "ইতিমধ্যে আছে", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), Tr.t("ইতিমধ্যে আছে"), Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setNegativeButton("বাতিল", null)
+                .setNegativeButton(Tr.t("বাতিল"), null)
                 .show();
     }
 
@@ -251,7 +253,7 @@ public class AddExpenseFragment extends Fragment {
         setupCategoriesFor(selectedType);
         selectedCategory = editingExpense.getCategory();
         if (tvSelectedCategory != null) {
-            tvSelectedCategory.setText("নির্বাচিত: " + editingExpense.getCategory());
+            tvSelectedCategory.setText(Tr.t("নির্বাচিত: ") + Tr.data(editingExpense.getCategory()));
         }
 
         selectedTimestamp = editingExpense.getDate();
@@ -269,7 +271,7 @@ public class AddExpenseFragment extends Fragment {
         updateTotalAndVisibility();
 
         if (btnSave != null) {
-            btnSave.setText(selectedType.equals("income") ? "আয় আপডেট করুন" : "খরচ আপডেট করুন");
+            btnSave.setText(selectedType.equals("income") ? Tr.t("আয় আপডেট করুন") : Tr.t("খরচ আপডেট করুন"));
         }
     }
 
@@ -290,9 +292,9 @@ public class AddExpenseFragment extends Fragment {
 
                 if (btnSave != null) {
                     if (editExpenseId > 0) {
-                        btnSave.setText(selectedType.equals("income") ? "আয় আপডেট করুন" : "খরচ আপডেট করুন");
+                        btnSave.setText(selectedType.equals("income") ? Tr.t("আয় আপডেট করুন") : Tr.t("খরচ আপডেট করুন"));
                     } else {
-                        btnSave.setText(selectedType.equals("income") ? "আয় সেভ করুন" : "খরচ সেভ করুন");
+                        btnSave.setText(selectedType.equals("income") ? Tr.t("আয় সেভ করুন") : Tr.t("খরচ সেভ করুন"));
                     }
                 }
             }
@@ -307,7 +309,7 @@ public class AddExpenseFragment extends Fragment {
         CategoryAdapter adapter = new CategoryAdapter(
                 requireContext(), categories, category -> {
             selectedCategory = category.getName();
-            tvSelectedCategory.setText("নির্বাচিত: " + category.getShortName());
+            tvSelectedCategory.setText(Tr.t("নির্বাচিত: ") + Tr.data(category.getShortName()));
         });
 
         rvCategories.setLayoutManager(new GridLayoutManager(requireContext(), 4));
@@ -315,7 +317,7 @@ public class AddExpenseFragment extends Fragment {
 
         if (editExpenseId <= 0 && !categories.isEmpty()) {
             selectedCategory = categories.get(0).getName();
-            tvSelectedCategory.setText("নির্বাচিত: " + categories.get(0).getShortName());
+            tvSelectedCategory.setText(Tr.t("নির্বাচিত: ") + Tr.data(categories.get(0).getShortName()));
         }
     }
 
@@ -347,41 +349,41 @@ public class AddExpenseFragment extends Fragment {
         container.setPadding(pad, pad, pad, 0);
 
         EditText etNameD = new EditText(requireContext());
-        etNameD.setHint("আইটেমের নাম");
+        etNameD.setHint(Tr.t("আইটেমের নাম"));
         etNameD.setText(item.getName());
         container.addView(etNameD);
 
         EditText etAmountD = new EditText(requireContext());
-        etAmountD.setHint("পরিমাণ");
+        etAmountD.setHint(Tr.t("পরিমাণ"));
         etAmountD.setInputType(android.text.InputType.TYPE_CLASS_NUMBER
                 | android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL);
         etAmountD.setText(String.format(Locale.US, "%.0f", item.getAmount()));
         container.addView(etAmountD);
 
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("আইটেম এডিট করুন")
+                .setTitle(Tr.t("আইটেম এডিট করুন"))
                 .setView(container)
-                .setPositiveButton("সেভ করুন", (d, w) -> {
+                .setPositiveButton(Tr.t("সেভ করুন"), (d, w) -> {
                     String newName = etNameD.getText().toString().trim();
                     String amtStr = etAmountD.getText().toString().trim();
                     if (newName.isEmpty() || amtStr.isEmpty()) {
-                        Toast.makeText(requireContext(), "নাম ও পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), Tr.t("নাম ও পরিমাণ দিন"), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     double newAmount;
                     try {
                         newAmount = Double.parseDouble(bn.toEnglish(amtStr));
                     } catch (NumberFormatException ex) {
-                        Toast.makeText(requireContext(), "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), Tr.t("সঠিক পরিমাণ দিন"), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     item.setName(newName);
                     item.setAmount(newAmount);
                     addedAdapter.notifyItemChanged(index);
                     updateTotalAndVisibility();
-                    Toast.makeText(requireContext(), "আপডেট হয়েছে", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), Tr.t("আপডেট হয়েছে"), Toast.LENGTH_SHORT).show();
                 })
-                .setNegativeButton("বাতিল", null)
+                .setNegativeButton(Tr.t("বাতিল"), null)
                 .show();
     }
 
@@ -390,7 +392,7 @@ public class AddExpenseFragment extends Fragment {
         btnSelectDate.setOnClickListener(v -> {
             MaterialDatePicker<Long> picker =
                     MaterialDatePicker.Builder.datePicker()
-                            .setTitleText("তারিখ নির্বাচন করুন")
+                            .setTitleText(Tr.t("তারিখ নির্বাচন করুন"))
                             .setSelection(selectedTimestamp)
                             .build();
             picker.addOnPositiveButtonClickListener(sel -> {
@@ -416,9 +418,9 @@ public class AddExpenseFragment extends Fragment {
 
         String dateStr;
         if (isToday) {
-            dateStr = "আজ, " + sel.get(Calendar.DAY_OF_MONTH);
+            dateStr = Tr.t("আজ, ") + sel.get(Calendar.DAY_OF_MONTH);
         } else if (isYesterday) {
-            dateStr = "গতকাল, " + sel.get(Calendar.DAY_OF_MONTH);
+            dateStr = Tr.t("গতকাল, ") + sel.get(Calendar.DAY_OF_MONTH);
         } else {
             dateStr = sel.get(Calendar.DAY_OF_MONTH) + "/" + (sel.get(Calendar.MONTH) + 1) + "/" + sel.get(Calendar.YEAR);
         }
@@ -431,17 +433,17 @@ public class AddExpenseFragment extends Fragment {
             String name = etName.getText().toString().trim();
 
             if (amountStr.isEmpty()) {
-                Toast.makeText(requireContext(), "পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), Tr.t("পরিমাণ দিন"), Toast.LENGTH_SHORT).show();
                 return;
             }
             if (name.isEmpty()) {
-                Toast.makeText(requireContext(), "নাম দিন", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), Tr.t("নাম দিন"), Toast.LENGTH_SHORT).show();
                 return;
             }
 
             double amount = parseAmount(amountStr);
             if (amount <= 0) {
-                Toast.makeText(requireContext(), "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), Tr.t("সঠিক পরিমাণ দিন"), Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -453,7 +455,7 @@ public class AddExpenseFragment extends Fragment {
             etAmount.requestFocus();
 
             updateTotalAndVisibility();
-            Toast.makeText(requireContext(), "যোগ করা হয়েছে", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), Tr.t("যোগ করা হয়েছে"), Toast.LENGTH_SHORT).show();
         });
     }
 
@@ -475,7 +477,7 @@ public class AddExpenseFragment extends Fragment {
     }
 
     private void setupSaveButton() {
-        btnSave.setText(editExpenseId > 0 ? "আপডেট করুন" : "সেভ করুন");
+        btnSave.setText(editExpenseId > 0 ? Tr.t("আপডেট করুন") : Tr.t("সেভ করুন"));
 
         btnSave.setOnClickListener(v -> {
             // ১. কীবোর্ড হাইড করুন
@@ -490,12 +492,12 @@ public class AddExpenseFragment extends Fragment {
                 String amountStr = etAmount.getText().toString().trim();
                 String name = etName.getText().toString().trim();
                 if (amountStr.isEmpty() || name.isEmpty()) {
-                    Toast.makeText(requireContext(), "কমপক্ষে একটি আইটেম যোগ করুন", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), Tr.t("কমপক্ষে একটি আইটেম যোগ করুন"), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 double amount = parseAmount(amountStr);
                 if (amount <= 0) {
-                    Toast.makeText(requireContext(), "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), Tr.t("সঠিক পরিমাণ দিন"), Toast.LENGTH_SHORT).show();
                     return;
                 }
                 addedItems.add(new ExpenseItem(name, amount));
@@ -521,15 +523,15 @@ public class AddExpenseFragment extends Fragment {
             if (editExpenseId > 0) {
                 int rows = dbHelper.updateExpense(editExpenseId, expense);
                 if (rows > 0) {
-                    Toast.makeText(requireContext(), "আপডেট সফল হয়েছে", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), Tr.t("আপডেট সফল হয়েছে"), Toast.LENGTH_SHORT).show();
                     requireActivity().onBackPressed();
                 } else {
-                    Toast.makeText(requireContext(), "আপডেট ব্যর্থ হয়েছে", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), Tr.t("আপডেট ব্যর্থ হয়েছে"), Toast.LENGTH_SHORT).show();
                 }
             } else {
                 long id = dbHelper.addExpense(expense);
                 if (id > 0) {
-                    Toast.makeText(requireContext(), "সফলভাবে যোগ করা হয়েছে", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), Tr.t("সফলভাবে যোগ করা হয়েছে"), Toast.LENGTH_SHORT).show();
                     addedItems.clear();
 
                     // ৪. কীবোর্ড বন্ধ হওয়ার জন্য ২০০ মিলিসেকেন্ড অপেক্ষা করে হোমে যান
@@ -541,7 +543,7 @@ public class AddExpenseFragment extends Fragment {
                         }, 200);
                     }
                 } else {
-                    Toast.makeText(requireContext(), "সেভ করতে ব্যর্থ হয়েছে", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), Tr.t("সেভ করতে ব্যর্থ হয়েছে"), Toast.LENGTH_SHORT).show();
                 }
             }
         });

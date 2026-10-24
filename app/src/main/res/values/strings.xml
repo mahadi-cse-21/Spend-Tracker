@@ -352,4 +352,80 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
 
+
+    <!-- Auto-extracted UI texts -->
+    <string name="ui_001">৳</string>
+    <string name="ui_002">ক্যাটাগরির নাম</string>
+    <string name="ui_003">ইমোজি (যেমন: ☕)</string>
+    <string name="ui_004">ঋণের ধরন</string>
+    <string name="ui_005">আমি ঋণ নিয়েছি</string>
+    <string name="ui_006">আমি ঋণ দিয়েছি</string>
+    <string name="ui_007">ব্যক্তির নাম</string>
+    <string name="ui_008">যেমন: আরমান ভাই</string>
+    <string name="ui_009">মোট পরিমাণ</string>
+    <string name="ui_010">৳ ০</string>
+    <string name="ui_011">নোট (optional)</string>
+    <string name="ui_012">বিবরণ লিখুন...</string>
+    <string name="ui_013">ব্যক্তি</string>
+    <string name="ui_014">বাকি: ৳ ০</string>
+    <string name="ui_015">পরিশোধের পরিমাণ (৳)</string>
+    <string name="ui_016">খরচ</string>
+    <string name="ui_017">আয়</string>
+    <string name="ui_018">তারিখ</string>
+    <string name="ui_019">ক্যাটাগরি নির্বাচন করুন</string>
+    <string name="ui_020">+ নতুন ক্যাটাগরি</string>
+    <string name="ui_021">নাম</string>
+    <string name="ui_022">যেমন: দুপুরের খাবার, মাসিক বেতন...</string>
+    <string name="ui_023">পরিমাণ</string>
+    <string name="ui_024">০</string>
+    <string name="ui_025">+ আইটেম যোগ করুন</string>
+    <string name="ui_026">যোগ করা আইটেম</string>
+    <string name="ui_027">সর্বমোট</string>
+    <string name="ui_028">সংরক্ষণ করুন</string>
+    <string name="ui_029">বর্তমান</string>
+    <string name="ui_030">এই পর্বের ব্যালেন্স</string>
+    <string name="ui_031">আয় ৳০</string>
+    <string name="ui_032" formatted="false">ব্যয় ০%</string>
+    <string name="ui_033">মোট ব্যয়</string>
+    <string name="ui_034">বাকি</string>
+    <string name="ui_035">দৈনিক গড়</string>
+    <string name="ui_036">সর্বোচ্চ খরচ</string>
+    <string name="ui_037">৳০</string>
+    <string name="ui_038">ব্যয়</string>
+    <string name="ui_039">মোট ব্যালেন্স (সর্বকালের)</string>
+    <string name="ui_040">আজকের লেনদেন</string>
+    <string name="ui_041">খরচ যোগ</string>
+    <string name="ui_042">আয় যোগ</string>
+    <string name="ui_043">সব লেনদেন</string>
+    <string name="ui_044">ঋণের হিসাব</string>
+    <string name="ui_045">ঋণ</string>
+    <string name="ui_046">+ নতুন ঋণ যোগ করুন</string>
+    <string name="ui_047">ঋণের তালিকা</string>
+    <string name="ui_048">এখনও কোনো ঋণ যোগ করা হয়নি</string>
+    <string name="ui_049">রাত ৮:০০ টা</string>
+    <string name="ui_050">সব লেনদেন CSV ফাইলে ডাউনলোড করুন</string>
+    <string name="ui_051">আগের CSV ব্যাকআপ আপলোড করুন</string>
+    <string name="ui_052">সব লেনদেন ও বাজেট মুছে ফেলুন</string>
+    <string name="ui_053">যোগাযোগ</string>
+    <string name="ui_054">সমস্যা, মতামত বা পরামর্শ জানান</string>
+    <string name="ui_055">খরচের বিবরণ</string>
+    <string name="ui_056">আইটেমের নাম</string>
+    <string name="ui_057">আইটেম এডিট করুন</string>
+    <string name="ui_058">আইটেম মুছুন</string>
+    <string name="ui_059">বর্তমান খরচ: ৳ ০</string>
+    <string name="ui_060" formatted="false">০% ব্যায়িত</string>
+    <string name="ui_061">বাজেট: ৳ ০</string>
+    <string name="ui_062">১</string>
+    <string name="ui_063">খরচের নাম</string>
+    <string name="ui_064">পরিশোধ: ৳ ০</string>
+    <string name="ui_065">মোট: ৳ ০</string>
+    <string name="ui_066">এডিট</string>
+    <string name="ui_067">পরিশোধ</string>
+    <string name="ui_068">মুছুন</string>
+    <string name="theme">থিম</string>
+    <string name="theme_system">সিস্টেম অনুযায়ী</string>
+    <string name="theme_light">লাইট মোড</string>
+    <string name="theme_dark">ডার্ক মোড</string>
+    <string name="choose_language">ভাষা নির্বাচন করুন</string>
+    <string name="choose_theme">থিম নির্বাচন করুন</string>
 </resources>

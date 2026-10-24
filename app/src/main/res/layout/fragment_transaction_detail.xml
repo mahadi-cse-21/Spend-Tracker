@@ -81,7 +81,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:text="৳ ০"
+                            android:text="@string/ui_010"
                             android:textColor="@color/error"
                             android:textSize="32sp"
                             android:textStyle="bold" />
@@ -181,7 +181,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:drawablePadding="8dp"
-                        android:text="খরচের বিবরণ"
+                        android:text="@string/ui_055"
                         android:textColor="@color/on_surface"
                         android:textSize="14sp"
                         android:textStyle="bold"
@@ -212,7 +212,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:text="সর্বমোট"
+                            android:text="@string/ui_027"
                             android:textColor="@color/on_surface"
                             android:textSize="14sp"
                             android:textStyle="bold" />
@@ -221,7 +221,7 @@
                             android:id="@+id/tv_detail_total"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="৳ ০"
+                            android:text="@string/ui_010"
                             android:textColor="@color/primary"
                             android:textSize="16sp"
                             android:textStyle="bold" />

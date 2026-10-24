@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.adapters;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,7 +43,7 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Category category = categories.get(position);
         holder.tvEmoji.setText(category.getEmoji());
-        holder.tvName.setText(category.getShortName());
+        holder.tvName.setText(Tr.data(category.getShortName()));
 
         if (position == selectedPosition) {
             holder.itemView.setBackgroundResource(R.drawable.bg_pill_primary_container);

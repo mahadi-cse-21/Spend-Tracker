@@ -93,7 +93,7 @@
                             android:background="@drawable/bg_pill_primary_fixed"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="3dp"
-                            android:text="বর্তমান"
+                            android:text="@string/ui_029"
                             android:textColor="@color/on_primary_fixed"
                             android:textSize="10sp"
                             android:textStyle="bold"
@@ -187,7 +187,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="এই পর্বের ব্যালেন্স"
+                                android:text="@string/ui_030"
                                 android:textColor="@color/on_surface"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
@@ -197,7 +197,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="2dp"
-                                android:text="আয় ৳০"
+                                android:text="@string/ui_031"
                                 android:textColor="@color/on_surface_variant"
                                 android:textSize="11sp" />
                         </LinearLayout>
@@ -209,7 +209,7 @@
                             android:background="@drawable/bg_pill_surface_container"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="5dp"
-                            android:text="ব্যয় ০%"
+                            android:text="@string/ui_032"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="11sp"
                             android:textStyle="bold" />
@@ -229,7 +229,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:letterSpacing="-0.03"
-                            android:text="৳ ০"
+                            android:text="@string/ui_010"
                             android:textColor="@color/on_surface"
                             android:textSize="38sp"
                             android:textStyle="bold" />
@@ -240,7 +240,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:layout_marginBottom="6dp"
-                            android:text="মোট ব্যয়"
+                            android:text="@string/ui_033"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -265,7 +265,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="আয়"
+                                android:text="@string/ui_017"
                                 android:textColor="@color/on_surface_variant"
                                 android:textSize="10sp" />
 
@@ -274,7 +274,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="৳ ০"
+                                android:text="@string/ui_010"
                                 android:textColor="@color/primary"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
@@ -293,7 +293,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="খরচ"
+                                android:text="@string/ui_016"
                                 android:textColor="@color/on_surface_variant"
                                 android:textSize="10sp" />
 
@@ -302,7 +302,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="৳ ০"
+                                android:text="@string/ui_010"
                                 android:textColor="@color/error"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
@@ -321,7 +321,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="বাকি"
+                                android:text="@string/ui_034"
                                 android:textColor="@color/on_surface_variant"
                                 android:textSize="10sp" />
 
@@ -330,7 +330,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="৳ ০"
+                                android:text="@string/ui_010"
                                 android:textColor="@color/tertiary"
                                 android:textSize="15sp"
                                 android:textStyle="bold" />
@@ -662,7 +662,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="দৈনিক গড়"
+                                android:text="@string/ui_035"
                                 android:textColor="@color/on_surface_variant"
                                 android:textSize="10sp" />
 
@@ -692,7 +692,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="সর্বোচ্চ খরচ"
+                                android:text="@string/ui_036"
                                 android:textColor="@color/on_surface_variant"
                                 android:textSize="10sp" />
 

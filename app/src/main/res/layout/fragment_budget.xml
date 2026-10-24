@@ -115,7 +115,7 @@
                                     android:id="@+id/tv_total_budget"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="৳ ০"
+                                    android:text="@string/ui_010"
                                     android:textColor="@color/on_surface"
                                     android:textSize="28sp"
                                     android:textStyle="bold" />
@@ -206,7 +206,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="৳ ০"
+                                android:text="@string/ui_010"
                                 android:textColor="@color/on_surface"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -236,7 +236,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="৳ ০"
+                                android:text="@string/ui_010"
                                 android:textColor="@color/primary"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />

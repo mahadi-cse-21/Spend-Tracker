@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.views;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -13,7 +15,7 @@ public class BarChartView extends View {
     private Paint barPaint;
     private Paint trackPaint;
     private float[] values = {0, 0, 0, 0};
-    private String[] labels = {"১ম", "২য়", "৩য়", "৪র্থ"};
+    private String[] labels = {Tr.t("১ম"), Tr.t("২য়"), Tr.t("৩য়"), Tr.t("৪র্থ")};
 
     public BarChartView(Context context) {
         super(context);
@@ -27,11 +29,11 @@ public class BarChartView extends View {
 
     private void init() {
         barPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        barPaint.setColor(0xFF00513C);
+        barPaint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), com.diodeit.spendtrack.R.color.primary));
         barPaint.setStyle(Paint.Style.FILL);
 
         trackPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        trackPaint.setColor(0xFFEDEEEC);
+        trackPaint.setColor(androidx.core.content.ContextCompat.getColor(getContext(), com.diodeit.spendtrack.R.color.surface_container_high));
         trackPaint.setStyle(Paint.Style.FILL);
     }
 

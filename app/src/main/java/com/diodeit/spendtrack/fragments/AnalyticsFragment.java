@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.fragments;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,10 +61,11 @@ public class AnalyticsFragment extends Fragment {
     private int currentPeriod = 1;
     private final Calendar selectedCal = Calendar.getInstance();
 
+    // bright enough to look good in both light and dark mode
     private final int[] chartColors = {
-            0xFF00513C, 0xFF006877, 0xFFBA1A1A,
-            0xFF406658, 0xFFBEC9C2, 0xFF7D5260,
-            0xFF6750A4, 0xFF964B00
+            0xFF2E9E78, 0xFF2E97AA, 0xFFE5534B,
+            0xFF5E8F7D, 0xFFBEC9C2, 0xFFB5707F,
+            0xFF8E78D6, 0xFFD98A3D
     };
 
     @Nullable
@@ -157,9 +160,9 @@ public class AnalyticsFragment extends Fragment {
             String startDay = bnConverter.toBengali(start.get(Calendar.DAY_OF_MONTH));
             String endDay   = bnConverter.toBengali(end.get(Calendar.DAY_OF_MONTH));
             String endMonth = DateUtils.getBengaliMonth(end.get(Calendar.MONTH));
-            label = "সপ্তাহ: " + startDay + " – " + endDay + " " + endMonth;
+            label = Tr.t("সপ্তাহ: ") + startDay + " – " + endDay + " " + endMonth;
         } else if (currentPeriod == 2) {
-            label = "বছর " + bnConverter.toBengali(year);
+            label = Tr.t("বছর ") + bnConverter.toBengali(year);
         } else {
             label = DateUtils.getBengaliMonth(month) + " " + bnConverter.toBengali(year);
         }
@@ -216,8 +219,8 @@ public class AnalyticsFragment extends Fragment {
                 income  = getTypeTotalInRange("income", range[0], range[1]);
                 expense = getTypeTotalInRange("expense", range[0], range[1]);
                 periodExpenses = dbHelper.getExpensesByRange(range[0], range[1]);
-                periodLabel = "চলতি সপ্তাহের হিসাব";
-                periodShortLabel = "সাপ্তাহিক";
+                periodLabel = Tr.t("চলতি সপ্তাহের হিসাব");
+                periodShortLabel = Tr.t("সাপ্তাহিক");
                 daysLeftText = getDaysLeftTextForWeek(selectedCal);
                 break;
             }
@@ -225,8 +228,8 @@ public class AnalyticsFragment extends Fragment {
                 income  = getYearIncome(year);
                 expense = getYearExpense(year);
                 periodExpenses = getYearExpenses(year);
-                periodLabel = bnConverter.toBengali(year) + " সালের হিসাব";
-                periodShortLabel = "বাৎসরিক";
+                periodLabel = bnConverter.toBengali(year) + Tr.t(" সালের হিসাব");
+                periodShortLabel = Tr.t("বাৎসরিক");
                 daysLeftText = getDaysLeftTextForYear(selectedCal);
                 break;
             }
@@ -235,8 +238,8 @@ public class AnalyticsFragment extends Fragment {
                 expense = getMonthExpense(year, month);
                 periodExpenses = dbHelper.getMonthExpenses(year, month);
                 periodLabel = DateUtils.getBengaliMonth(month) + " "
-                        + bnConverter.toBengali(year) + " মাসের হিসাব";
-                periodShortLabel = "মাসিক";
+                        + bnConverter.toBengali(year) + Tr.t(" মাসের হিসাব");
+                periodShortLabel = Tr.t("মাসিক");
                 daysLeftText = getDaysLeftTextForMonth(selectedCal);
                 break;
             }
@@ -250,7 +253,7 @@ public class AnalyticsFragment extends Fragment {
         if (income <= 0) {
             tvMonthlyTotal.setText("৳ " + expenseStr);
             tvMonthlyTotal.setTextColor(ContextCompat.getColor(requireContext(), R.color.error));
-            tvTotalBudgetLabel.setText("মোট ব্যয়");
+            tvTotalBudgetLabel.setText(Tr.t("মোট ব্যয়"));
         } else {
             double shown = Math.abs(balance);
             String balanceStr = bnConverter.toBengali(String.format(Locale.US, "%,.0f", shown));
@@ -258,11 +261,11 @@ public class AnalyticsFragment extends Fragment {
             if (balance >= 0) {
                 tvMonthlyTotal.setTextColor(
                         ContextCompat.getColor(requireContext(), R.color.on_surface));
-                tvTotalBudgetLabel.setText("বাকি");
+                tvTotalBudgetLabel.setText(Tr.t("বাকি"));
             } else {
                 tvMonthlyTotal.setTextColor(
                         ContextCompat.getColor(requireContext(), R.color.error));
-                tvTotalBudgetLabel.setText("ঘাটতি");
+                tvTotalBudgetLabel.setText(Tr.t("ঘাটতি"));
             }
         }
 
@@ -271,13 +274,13 @@ public class AnalyticsFragment extends Fragment {
         int percent;
         if (income > 0) {
             percent = (int) Math.min((expense / income) * 100, 100);
-            tvUsedPercent.setText("ব্যয় " + bnConverter.toBengali(percent) + "%");
+            tvUsedPercent.setText(Tr.t("ব্যয় ") + bnConverter.toBengali(percent) + "%");
         } else if (expense > 0) {
             percent = 100;
-            tvUsedPercent.setText("ব্যয় ১০০%");
+            tvUsedPercent.setText(Tr.t("ব্যয় ১০০%"));
         } else {
             percent = 0;
-            tvUsedPercent.setText("ব্যয় —");
+            tvUsedPercent.setText(Tr.t("ব্যয় —"));
         }
 
         progressOverall.setProgressCompat(percent, true);
@@ -286,7 +289,7 @@ public class AnalyticsFragment extends Fragment {
             tvUsedPercent.setTextColor(
                     ContextCompat.getColor(requireContext(), R.color.error));
         } else if (percent >= 50) {
-            tvUsedPercent.setTextColor(0xFF964B00);
+            tvUsedPercent.setTextColor(ContextCompat.getColor(requireContext(), R.color.warning));
         } else {
             tvUsedPercent.setTextColor(
                     ContextCompat.getColor(requireContext(), R.color.on_surface_variant));
@@ -299,9 +302,9 @@ public class AnalyticsFragment extends Fragment {
                 String.format(Locale.US, "%,.0f", Math.max(balance, 0)));
         tvRemainingStat.setText("৳ " + remainingStr);
 
-        tvRemainingFund.setText("অবশিষ্ট: ৳" + remainingStr);
+        tvRemainingFund.setText(Tr.t("অবশিষ্ট: ৳") + remainingStr);
         tvDaysLeft.setText(daysLeftText);
-        tvChartMonth.setText(periodShortLabel + " রিপোর্ট");
+        tvChartMonth.setText(periodShortLabel + Tr.t(" রিপোর্ট"));
 
         loadCategoryBreakdown(periodExpenses);
         loadTrendChart(periodExpenses);
@@ -375,13 +378,13 @@ public class AnalyticsFragment extends Fragment {
         long[] range = getWeekRange(anchor);
         long todayEnd = endOfToday();
 
-        if (todayEnd < range[0]) return "৭ দিনের সপ্তাহ";
-        if (todayEnd > range[1]) return "সম্পূর্ণ সপ্তাহ";
+        if (todayEnd < range[0]) return Tr.t("৭ দিনের সপ্তাহ");
+        if (todayEnd > range[1]) return Tr.t("সম্পূর্ণ সপ্তাহ");
 
         long diffMs = range[1] - startOfToday();
         int daysLeft = (int) (diffMs / (24L * 60 * 60 * 1000)) + 1;
         if (daysLeft < 0) daysLeft = 0;
-        return "আর " + bnConverter.toBengali(daysLeft) + " দিন বাকি";
+        return Tr.t("আর ") + bnConverter.toBengali(daysLeft) + Tr.t(" দিন বাকি");
     }
 
     private String getDaysLeftTextForMonth(Calendar anchor) {
@@ -394,15 +397,15 @@ public class AnalyticsFragment extends Fragment {
             Calendar c = Calendar.getInstance();
             c.set(year, month, 1);
             int days = c.getActualMaximum(Calendar.DAY_OF_MONTH);
-            return bnConverter.toBengali(days) + " দিনের মাস";
+            return bnConverter.toBengali(days) + Tr.t(" দিনের মাস");
         }
-        if (todayEnd > range[1]) return "সম্পূর্ণ মাস";
+        if (todayEnd > range[1]) return Tr.t("সম্পূর্ণ মাস");
 
         Calendar now = Calendar.getInstance();
         int daysInMonth = now.getActualMaximum(Calendar.DAY_OF_MONTH);
         int daysLeft = daysInMonth - now.get(Calendar.DAY_OF_MONTH) + 1;
         if (daysLeft < 0) daysLeft = 0;
-        return "আর " + bnConverter.toBengali(daysLeft) + " দিন বাকি";
+        return Tr.t("আর ") + bnConverter.toBengali(daysLeft) + Tr.t(" দিন বাকি");
     }
 
     private String getDaysLeftTextForYear(Calendar anchor) {
@@ -414,15 +417,15 @@ public class AnalyticsFragment extends Fragment {
             Calendar c = Calendar.getInstance();
             c.set(year, Calendar.JANUARY, 1);
             int days = c.getActualMaximum(Calendar.DAY_OF_YEAR);
-            return bnConverter.toBengali(days) + " দিনের বছর";
+            return bnConverter.toBengali(days) + Tr.t(" দিনের বছর");
         }
-        if (todayEnd > range[1]) return "সম্পূর্ণ বছর";
+        if (todayEnd > range[1]) return Tr.t("সম্পূর্ণ বছর");
 
         Calendar now = Calendar.getInstance();
         int totalDays = now.getActualMaximum(Calendar.DAY_OF_YEAR);
         int daysLeft = totalDays - now.get(Calendar.DAY_OF_YEAR) + 1;
         if (daysLeft < 0) daysLeft = 0;
-        return "আর " + bnConverter.toBengali(daysLeft) + " দিন বাকি";
+        return Tr.t("আর ") + bnConverter.toBengali(daysLeft) + Tr.t(" দিন বাকি");
     }
 
     private double getTypeTotalInRange(String type, long start, long end) {
@@ -484,9 +487,9 @@ public class AnalyticsFragment extends Fragment {
 
         if (total <= 0) {
             donutChart.setData(new float[]{}, chartColors);
-            tvHighestPercent.setText("০%");
+            tvHighestPercent.setText(Tr.t("০%"));
             tvHighestCategory.setText("-");
-            if (tvCatCount != null) tvCatCount.setText("০টি খাত");
+            if (tvCatCount != null) tvCatCount.setText(Tr.t("০টি খাত"));
             return;
         }
 
@@ -516,7 +519,7 @@ public class AnalyticsFragment extends Fragment {
 
             int color = chartColors[i % chartColors.length];
             if (colorDot != null) colorDot.setBackgroundColor(color);
-            if (tvName != null) tvName.setText(entry.getKey());
+            if (tvName != null) tvName.setText(Tr.data(entry.getKey()));
             if (tvAmountText != null) {
                 tvAmountText.setText(bnConverter.formatCurrency(entry.getValue()));
             }
@@ -534,7 +537,7 @@ public class AnalyticsFragment extends Fragment {
         tvHighestCategory.setText(highestCat);
 
         if (tvCatCount != null) {
-            tvCatCount.setText(bnConverter.toBengali(catMap.size()) + "টি খাত");
+            tvCatCount.setText(bnConverter.toBengali(catMap.size()) + Tr.t("টি খাত"));
         }
     }
 
@@ -584,18 +587,18 @@ public class AnalyticsFragment extends Fragment {
         String maxLabel;
         if (currentPeriod == 0) {
             avg = total / 7.0;
-            maxLabel = "সর্বোচ্চ দিন: " + maxDayLabel(values);
+            maxLabel = Tr.t("সর্বোচ্চ দিন: ") + maxDayLabel(values);
         } else if (currentPeriod == 2) {
             avg = total / 12.0;
-            maxLabel = "সর্বোচ্চ মাস: " + maxMonthLabel(values);
+            maxLabel = Tr.t("সর্বোচ্চ মাস: ") + maxMonthLabel(values);
         } else {
             int daysInMonth = selectedCal.getActualMaximum(Calendar.DAY_OF_MONTH);
             avg = total / Math.max(1, daysInMonth);
-            String[] weekNames = { "১ম সপ্তাহ", "২য় সপ্তাহ", "৩য় সপ্তাহ", "৪র্থ সপ্তাহ" };
-            maxLabel = "সর্বোচ্চ: " + weekNames[indexOfMax(values)];
+            String[] weekNames = { Tr.t("১ম সপ্তাহ"), Tr.t("২য় সপ্তাহ"), Tr.t("৩য় সপ্তাহ"), Tr.t("৪র্থ সপ্তাহ") };
+            maxLabel = Tr.t("সর্বোচ্চ: ") + weekNames[indexOfMax(values)];
         }
 
-        tvAvgDaily.setText("গড়: ৳" + bnConverter.toBengali(
+        tvAvgDaily.setText(Tr.t("গড়: ৳") + bnConverter.toBengali(
                 String.format(Locale.US, "%,.0f", avg)));
         tvMaxExpense.setText(maxLabel);
     }
@@ -613,7 +616,7 @@ public class AnalyticsFragment extends Fragment {
         Calendar ws = (Calendar) selectedCal.clone();
         ws.set(Calendar.DAY_OF_WEEK, ws.getFirstDayOfWeek());
 
-        String[] dayNames = { "রবি", "সোম", "মঙ্গল", "বুধ", "বৃহঃ", "শুক্র", "শনি" };
+        String[] dayNames = { Tr.t("রবি"), Tr.t("সোম"), Tr.t("মঙ্গল"), Tr.t("বুধ"), Tr.t("বৃহঃ"), Tr.t("শুক্র"), Tr.t("শনি") };
         int idx = indexOfMax(values);
         if (idx < 0 || idx > 6) return "-";
 
@@ -625,8 +628,8 @@ public class AnalyticsFragment extends Fragment {
 
     private String maxMonthLabel(float[] values) {
         String[] months = {
-                "জানু", "ফেব্রু", "মার্চ", "এপ্রিল", "মে", "জুন",
-                "জুলাই", "আগস্ট", "সেপ্ট", "অক্টো", "নভে", "ডিসে"
+                Tr.t("জানু"), Tr.t("ফেব্রু"), Tr.t("মার্চ"), Tr.t("এপ্রিল"), Tr.t("মে"), Tr.t("জুন"),
+                Tr.t("জুলাই"), Tr.t("আগস্ট"), Tr.t("সেপ্ট"), Tr.t("অক্টো"), Tr.t("নভে"), Tr.t("ডিসে")
         };
         int idx = indexOfMax(values);
         return (idx >= 0 && idx < months.length) ? months[idx] : "-";
@@ -669,22 +672,22 @@ public class AnalyticsFragment extends Fragment {
             if (tvName == null || tvStatus == null || tvSpentVsBudget == null
                     || tvRemaining == null || progressBar == null) continue;
 
-            tvName.setText(cb.getCategoryName());
+            tvName.setText(Tr.data(cb.getCategoryName()));
             int percent = cb.getPercentSpent();
             progressBar.setProgress(Math.max(0, Math.min(percent, 100)));
 
             if (percent >= 90) {
-                tvStatus.setText("সীমা ছাড়িয়েছে");
-                tvStatus.setTextColor(0xFFBA1A1A);
-                progressBar.setIndicatorColor(0xFFBA1A1A);
+                tvStatus.setText(Tr.t("সীমা ছাড়িয়েছে"));
+                tvStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.error));
+                progressBar.setIndicatorColor(ContextCompat.getColor(requireContext(), R.color.error));
             } else if (percent >= 75) {
-                tvStatus.setText("সীমার কাছাকাছি");
-                tvStatus.setTextColor(0xFF964B00);
-                progressBar.setIndicatorColor(0xFF964B00);
+                tvStatus.setText(Tr.t("সীমার কাছাকাছি"));
+                tvStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.warning));
+                progressBar.setIndicatorColor(ContextCompat.getColor(requireContext(), R.color.warning));
             } else {
-                tvStatus.setText("নিয়ন্ত্রণে");
-                tvStatus.setTextColor(0xFF00513C);
-                progressBar.setIndicatorColor(0xFF00513C);
+                tvStatus.setText(Tr.t("নিয়ন্ত্রণে"));
+                tvStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.primary));
+                progressBar.setIndicatorColor(ContextCompat.getColor(requireContext(), R.color.primary));
             }
 
             String spentStr = bnConverter.toBengali(
@@ -692,8 +695,8 @@ public class AnalyticsFragment extends Fragment {
             String budgetStr = bnConverter.toBengali(
                     String.format(Locale.US, "%,.0f", cb.getBudgetAmount()));
 
-            tvSpentVsBudget.setText("খরচ: ৳" + spentStr + " / ৳" + budgetStr);
-            tvRemaining.setText("অবশিষ্ট: ৳" + bnConverter.toBengali(
+            tvSpentVsBudget.setText(Tr.t("খরচ: ৳") + spentStr + " / ৳" + budgetStr);
+            tvRemaining.setText(Tr.t("অবশিষ্ট: ৳") + bnConverter.toBengali(
                     String.format(Locale.US, "%,.0f", cb.getRemaining())));
 
             llBudgetHealth.addView(itemView);
@@ -714,12 +717,12 @@ public class AnalyticsFragment extends Fragment {
                 periodExpenses = dbHelper.getExpensesByRange(range[0], range[1]);
                 income  = getTypeTotalInRange("income", range[0], range[1]);
                 expense = getTypeTotalInRange("expense", range[0], range[1]);
-                periodLabel = "সাপ্তাহিক রিপোর্ট";
+                periodLabel = Tr.t("সাপ্তাহিক রিপোর্ট");
             } else if (currentPeriod == 2) {
                 periodExpenses = getYearExpenses(year);
                 income  = getYearIncome(year);
                 expense = getYearExpense(year);
-                periodLabel = "বাৎসরিক রিপোর্ট " + bnConverter.toBengali(year);
+                periodLabel = Tr.t("বাৎসরিক রিপোর্ট ") + bnConverter.toBengali(year);
             } else {
                 periodExpenses = dbHelper.getMonthExpenses(year, month);
                 income  = getMonthIncome(year, month);
@@ -734,8 +737,8 @@ public class AnalyticsFragment extends Fragment {
                     income, expense, balance, periodLabel);
 
             Toast.makeText(requireContext(),
-                    ok ? "পিডিএফ ডাউনলোড সম্পন্ন — Downloads/SpendTrack"
-                            : "পিডিএফ তৈরি ব্যর্থ",
+                    ok ? Tr.t("পিডিএফ ডাউনলোড সম্পন্ন — Downloads/SpendTrack")
+                            : Tr.t("পিডিএফ তৈরি ব্যর্থ"),
                     Toast.LENGTH_LONG).show();
         });
 
@@ -743,8 +746,8 @@ public class AnalyticsFragment extends Fragment {
             List<Expense> all = dbHelper.getAllExpenses();
             boolean ok = ExportHelper.exportCsv(requireContext(), all);
             Toast.makeText(requireContext(),
-                    ok ? "ব্যাকআপ সম্পন্ন — Downloads/SpendTrack"
-                            : "ব্যাকআপ তৈরি ব্যর্থ",
+                    ok ? Tr.t("ব্যাকআপ সম্পন্ন — Downloads/SpendTrack")
+                            : Tr.t("ব্যাকআপ তৈরি ব্যর্থ"),
                     Toast.LENGTH_LONG).show();
         });
     }

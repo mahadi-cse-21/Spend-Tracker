@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.utils;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -25,7 +27,7 @@ public class ReminderScheduler {
             // Check for Exact Alarm Permission on Android 12+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 if (!alarmManager.canScheduleExactAlarms()) {
-                    Toast.makeText(context, "রিমাইন্ডার কাজ করার জন্য 'Alarms & Reminders' পারমিশন প্রয়োজন", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, Tr.t("রিমাইন্ডার কাজ করার জন্য 'Alarms & Reminders' পারমিশন প্রয়োজন"), Toast.LENGTH_LONG).show();
                     try {
                         Intent intentSettings = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
                         intentSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

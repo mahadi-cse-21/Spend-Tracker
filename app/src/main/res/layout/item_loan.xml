@@ -41,7 +41,7 @@
                     android:id="@+id/tv_person"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="ব্যক্তির নাম"
+                    android:text="@string/ui_007"
                     android:textColor="@color/on_surface"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -50,7 +50,7 @@
                     android:id="@+id/tv_loan_type"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="আমি ঋণ নিয়েছি"
+                    android:text="@string/ui_005"
                     android:textColor="@color/on_surface_variant"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -65,7 +65,7 @@
                     android:id="@+id/tv_remaining"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="৳ ০"
+                    android:text="@string/ui_010"
                     android:textColor="@color/error"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -74,7 +74,7 @@
                     android:id="@+id/tv_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="বাকি"
+                    android:text="@string/ui_034"
                     android:textColor="@color/outline"
                     android:textSize="10sp" />
             </LinearLayout>
@@ -102,7 +102,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="পরিশোধ: ৳ ০"
+                android:text="@string/ui_064"
                 android:textColor="@color/on_surface_variant"
                 android:textSize="11sp" />
 
@@ -110,7 +110,7 @@
                 android:id="@+id/tv_total"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="মোট: ৳ ০"
+                android:text="@string/ui_065"
                 android:textColor="@color/on_surface_variant"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -128,7 +128,7 @@
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="এডিট"
+                android:text="@string/ui_066"
                 android:textColor="@color/primary"
                 android:textSize="12sp" />
 
@@ -137,7 +137,7 @@
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="পরিশোধ"
+                android:text="@string/ui_067"
                 android:textColor="@color/primary"
                 android:textSize="12sp" />
 
@@ -146,7 +146,7 @@
                 style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="মুছুন"
+                android:text="@string/ui_068"
                 android:textColor="@color/error"
                 android:textSize="12sp" />
         </LinearLayout>

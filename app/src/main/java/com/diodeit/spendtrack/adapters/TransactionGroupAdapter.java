@@ -1,5 +1,9 @@
 package com.diodeit.spendtrack.adapters;
 
+import androidx.core.content.ContextCompat;
+
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -186,10 +190,10 @@ public class TransactionGroupAdapter
 
         String dateStr;
         if (isToday) {
-            dateStr = "আজ, " + bn.toBengali(c.get(Calendar.DAY_OF_MONTH)) + " "
+            dateStr = Tr.t("আজ, ") + bn.toBengali(c.get(Calendar.DAY_OF_MONTH)) + " "
                     + DateUtils.getBengaliMonth(c.get(Calendar.MONTH));
         } else if (isYesterday) {
-            dateStr = "গতকাল, " + bn.toBengali(c.get(Calendar.DAY_OF_MONTH)) + " "
+            dateStr = Tr.t("গতকাল, ") + bn.toBengali(c.get(Calendar.DAY_OF_MONTH)) + " "
                     + DateUtils.getBengaliMonth(c.get(Calendar.MONTH));
         } else {
             dateStr = bn.toBengali(c.get(Calendar.DAY_OF_MONTH)) + " "
@@ -221,23 +225,23 @@ public class TransactionGroupAdapter
         h.tvTitle.setText(title);
 
         if (e.getItems() != null && e.getItems().size() > 1) {
-            String label = isIncome ? "টি আয়" : "টি খরচ";
+            String label = isIncome ? Tr.t("টি আয়") : Tr.t("টি খরচ");
             h.tvCategory.setText(e.getItems().size() + label);
         } else {
-            h.tvCategory.setText(e.getCategory());
+            h.tvCategory.setText(Tr.data(e.getCategory()));
         }
 
-        h.tvPayment.setText(e.getPaymentMethod());
+        h.tvPayment.setText(Tr.data(e.getPaymentMethod()));
 
         String amountStr = bn.toBengali(
                 String.format(Locale.US, "%,.0f", e.getAmount()));
 
         if (isIncome) {
             h.tvAmount.setText("+৳" + amountStr);
-            h.tvAmount.setTextColor(0xFF00513C);
+            h.tvAmount.setTextColor(ContextCompat.getColor(h.tvAmount.getContext(), R.color.primary));
         } else {
             h.tvAmount.setText("-৳" + amountStr);
-            h.tvAmount.setTextColor(0xFFBA1A1A);
+            h.tvAmount.setTextColor(ContextCompat.getColor(h.tvAmount.getContext(), R.color.error));
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());

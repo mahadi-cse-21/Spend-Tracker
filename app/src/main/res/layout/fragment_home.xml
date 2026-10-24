@@ -85,7 +85,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="মোট ব্যালেন্স (সর্বকালের)"
+                            android:text="@string/ui_039"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="12sp"
                             android:textAllCaps="true" />
@@ -100,7 +100,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="৳"
+                                android:text="@string/ui_001"
                                 android:textColor="@color/primary"
                                 android:textSize="22sp"
                                 android:textStyle="bold" />
@@ -203,7 +203,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="আজকের লেনদেন"
+                            android:text="@string/ui_040"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="10sp" />
 
@@ -228,7 +228,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="দৈনিক গড়"
+                            android:text="@string/ui_035"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="10sp" />
 
@@ -253,7 +253,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="মোট ব্যয়"
+                            android:text="@string/ui_033"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="10sp" />
 
@@ -315,7 +315,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:gravity="center"
-                    android:text="খরচ যোগ"
+                    android:text="@string/ui_041"
                     android:textColor="@color/on_surface"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -347,7 +347,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:gravity="center"
-                    android:text="আয় যোগ"
+                    android:text="@string/ui_042"
                     android:textColor="@color/on_surface"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -379,7 +379,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:gravity="center"
-                    android:text="পরিসংখ্যান"
+                    android:text="@string/nav_analytics"
                     android:textColor="@color/on_surface"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -411,7 +411,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:gravity="center"
-                    android:text="সব লেনদেন"
+                    android:text="@string/ui_043"
                     android:textColor="@color/on_surface"
                     android:textSize="11sp"
                     android:textStyle="bold" />
@@ -425,7 +425,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="12dp"
-            android:text="ঋণের হিসাব"
+            android:text="@string/ui_044"
             android:textColor="@color/on_surface"
             android:textStyle="bold"
             app:backgroundTint="@color/tertiary_fixed"

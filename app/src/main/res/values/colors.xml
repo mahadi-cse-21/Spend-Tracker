@@ -65,6 +65,9 @@
     <color name="background">#F8FAF7</color>
     <color name="on_background">#191C1B</color>
 
+    <!-- Warning (orange) used for "near the limit" -->
+    <color name="warning">#964B00</color>
+
     <!-- Extra -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>

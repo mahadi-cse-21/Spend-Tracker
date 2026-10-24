@@ -6,7 +6,7 @@
     android:layout_width="0dp"
     android:layout_height="48dp"
     android:layout_margin="4dp"
-    android:text="১"
+    android:text="@string/ui_062"
     android:textSize="18sp"
     android:textStyle="bold"
     app:backgroundTint="@color/surface_container_lowest"

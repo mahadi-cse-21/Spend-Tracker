@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.adapters;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,7 +53,7 @@ public class BudgetCategoryAdapter extends RecyclerView.Adapter<BudgetCategoryAd
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         CategoryBudget category = categories.get(position);
 
-        holder.tvCategoryName.setText(category.getCategoryName());
+        holder.tvCategoryName.setText(Tr.data(category.getCategoryName()));
         
         String spentStr = bnConverter.toBengali(String.format(Locale.US, "%,.0f", category.getSpentAmount()));
         String budgetStr = bnConverter.toBengali(String.format(Locale.US, "%,.0f", category.getBudgetAmount()));

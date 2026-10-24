@@ -7,7 +7,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_marginEnd="8dp"
-    android:text="ক্যাশ"
+    android:text="@string/pay_cash_short"
     android:textColor="@color/on_surface"
     app:chipBackgroundColor="@color/surface_container_low"
     app:chipStrokeWidth="0dp" />

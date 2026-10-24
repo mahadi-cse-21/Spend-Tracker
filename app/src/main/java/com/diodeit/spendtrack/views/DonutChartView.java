@@ -13,7 +13,7 @@ public class DonutChartView extends View {
     private Paint paint;
     private RectF rectF;
     private float[] values = {};
-    private int[] colors = {0xFF00513C, 0xFF006877, 0xFFBA1A1A, 0xFF406658, 0xFFBEC9C2, 0xFF7D5260, 0xFF6750A4};
+    private int[] colors = {0xFF2E9E78, 0xFF2E97AA, 0xFFE5534B, 0xFF5E8F7D, 0xFFBEC9C2, 0xFFB5707F, 0xFF8E78D6};
     private float strokeWidth = 40f;
 
     public DonutChartView(Context context) {

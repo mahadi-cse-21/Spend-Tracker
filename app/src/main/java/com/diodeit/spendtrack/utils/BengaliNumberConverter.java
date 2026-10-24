@@ -2,11 +2,17 @@ package com.diodeit.spendtrack.utils;
 
 public class BengaliNumberConverter {
 
+    // true  = show ০১২৩ (Bangla)   false = show 0123 (English)
+    private static boolean bengaliDigits = true;
+    public static void setBengaliDigits(boolean value) { bengaliDigits = value; }
+    public static boolean isBengaliDigits() { return bengaliDigits; }
+
     private static final char[] BN_DIGITS = {'০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'};
     private static final char[] EN_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 
     public String toBengali(String input) {
         if (input == null) return "";
+        if (!bengaliDigits) return toEnglish(input);   // English mode: keep 0-9
         StringBuilder sb = new StringBuilder();
         for (char c : input.toCharArray()) {
             if (c >= '0' && c <= '9') sb.append(BN_DIGITS[c - '0']);

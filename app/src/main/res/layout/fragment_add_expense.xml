@@ -54,12 +54,12 @@
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="খরচ" />
+                    android:text="@string/ui_016" />
 
                 <com.google.android.material.tabs.TabItem
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="আয়" />
+                    android:text="@string/ui_017" />
             </com.google.android.material.tabs.TabLayout>
 
             <!-- ===== Date selector ===== -->
@@ -100,7 +100,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="তারিখ"
+                            android:text="@string/ui_018"
                             android:textColor="@color/on_surface_variant"
                             android:textSize="11sp" />
 
@@ -108,7 +108,7 @@
                             android:id="@+id/tv_selected_date"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="আজ"
+                            android:text="@string/today"
                             android:textColor="@color/on_surface"
                             android:textSize="14sp"
                             android:textStyle="bold" />
@@ -117,7 +117,7 @@
                     <com.google.android.material.button.MaterialButton
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="পরিবর্তন"
+                        android:text="@string/change"
                         android:textColor="@color/on_surface"
                         android:textSize="12sp"
                         android:clickable="false"
@@ -139,7 +139,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="ক্যাটাগরি নির্বাচন করুন"
+                    android:text="@string/ui_019"
                     android:textColor="@color/on_surface"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -149,7 +149,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:padding="4dp"
-                    android:text="+ নতুন ক্যাটাগরি"
+                    android:text="@string/ui_020"
                     android:textColor="@color/primary"
                     android:textSize="12sp"
                     android:textStyle="bold" />
@@ -189,7 +189,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="নাম"
+                        android:text="@string/ui_021"
                         android:textColor="@color/on_surface"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -217,7 +217,7 @@
                             android:layout_weight="1"
                             android:layout_marginStart="8dp"
                             android:background="@null"
-                            android:hint="যেমন: দুপুরের খাবার, মাসিক বেতন..."
+                            android:hint="@string/ui_022"
                             android:inputType="textCapSentences"
                             android:maxLines="1"
                             android:textColor="@color/on_surface"
@@ -229,7 +229,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="পরিমাণ"
+                        android:text="@string/ui_023"
                         android:textColor="@color/on_surface"
                         android:textSize="13sp"
                         android:textStyle="bold" />
@@ -247,7 +247,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="৳"
+                            android:text="@string/ui_001"
                             android:textColor="@color/primary"
                             android:textSize="18sp"
                             android:textStyle="bold" />
@@ -259,7 +259,7 @@
                             android:layout_weight="1"
                             android:layout_marginStart="8dp"
                             android:background="@null"
-                            android:hint="০"
+                            android:hint="@string/ui_024"
                             android:inputType="numberDecimal"
                             android:textColor="@color/on_surface"
                             android:textColorHint="@color/outline"
@@ -273,7 +273,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="52dp"
                         android:layout_marginTop="16dp"
-                        android:text="+ আইটেম যোগ করুন"
+                        android:text="@string/ui_025"
                         android:textColor="@color/primary"
                         app:cornerRadius="16dp"
                         app:icon="@drawable/ic_add_circle"
@@ -289,7 +289,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="যোগ করা আইটেম"
+                android:text="@string/ui_026"
                 android:textColor="@color/on_surface"
                 android:textSize="14sp"
                 android:textStyle="bold"
@@ -318,7 +318,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="সর্বমোট"
+                    android:text="@string/ui_027"
                     android:textColor="@color/on_surface"
                     android:textSize="14sp"
                     android:textStyle="bold" />
@@ -327,7 +327,7 @@
                     android:id="@+id/tv_total_amount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="৳ ০"
+                    android:text="@string/ui_010"
                     android:textColor="@color/primary"
                     android:textSize="20sp"
                     android:textStyle="bold" />
@@ -340,7 +340,7 @@
                 android:layout_height="56dp"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="24dp"
-                android:text="সংরক্ষণ করুন"
+                android:text="@string/ui_028"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:backgroundTint="@color/primary"

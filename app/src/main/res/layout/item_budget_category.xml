@@ -50,7 +50,7 @@
                     android:id="@+id/tv_current_expense"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="বর্তমান খরচ: ৳ ০"
+                    android:text="@string/ui_059"
                     android:textColor="@color/on_surface_variant"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -62,7 +62,7 @@
                 android:background="@drawable/bg_pill_primary_fixed"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="2dp"
-                android:text="০% ব্যায়িত"
+                android:text="@string/ui_060"
                 android:textColor="@color/on_primary_fixed"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -91,7 +91,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="৳ ০"
+                android:text="@string/ui_010"
                 android:textColor="@color/on_surface_variant"
                 android:textSize="11sp" />
 
@@ -99,7 +99,7 @@
                 android:id="@+id/tv_budget"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="বাজেট: ৳ ০"
+                android:text="@string/ui_061"
                 android:textColor="@color/on_surface_variant"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -134,7 +134,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="8dp"
-                    android:text="৳ ০"
+                    android:text="@string/ui_010"
                     android:textColor="@color/on_surface"
                     android:textSize="14sp"
                     android:textStyle="bold" />

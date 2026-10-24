@@ -33,7 +33,7 @@ public class ExportHelper {
     // ================================================================
     public static boolean exportCsv(Context context, List<Expense> expenses) {
         if (expenses == null || expenses.isEmpty()) {
-            Toast.makeText(context, "কোনো ডেটা নেই", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, Tr.t("কোনো ডেটা নেই"), Toast.LENGTH_SHORT).show();
             return false;
         }
 
@@ -288,6 +288,9 @@ public class ExportHelper {
     // ─── Period label translation ───────────────────────────────
     private static String bnToEnPeriod(String label) {
         if (label == null) return "";
+        String low = label.toLowerCase();
+        if (low.contains("weekly"))      return "Weekly Report";
+        if (low.contains("yearly"))      return "Yearly Report";
         if (label.contains("সাপ্তাহিক")) return "Weekly Report";
         if (label.contains("বাৎসরিক"))  return "Yearly Report";
         if (label.contains("মাসিক"))    return "Monthly Report";

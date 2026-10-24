@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.adapters;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -59,17 +61,17 @@ public class ExpenseAdapter extends RecyclerView.Adapter<ExpenseAdapter.ViewHold
         // Title
         String title = expense.getItemsSummary();
         if (title == null || title.isEmpty()) title = expense.getCategory();
-        holder.tvTitle.setText(title);
+        holder.tvTitle.setText(Tr.data(title));
 
         // Subtext
         if (expense.getItems() != null && expense.getItems().size() > 1) {
-            String label = isIncome ? "টি আয়" : "টি খরচ";
+            String label = isIncome ? Tr.t("টি আয়") : Tr.t("টি খরচ");
             holder.tvCategory.setText(expense.getItems().size() + label);
         } else {
-            holder.tvCategory.setText(expense.getCategory());
+            holder.tvCategory.setText(Tr.data(expense.getCategory()));
         }
 
-        holder.tvPayment.setText(expense.getPaymentMethod());
+        holder.tvPayment.setText(Tr.data(expense.getPaymentMethod()));
 
         String amountStr = bnConverter.toBengali(
                 String.format(Locale.US, "%,.0f", expense.getAmount()));

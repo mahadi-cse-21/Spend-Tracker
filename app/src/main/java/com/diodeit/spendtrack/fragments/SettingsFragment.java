@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.fragments;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -27,6 +29,7 @@ import com.diodeit.spendtrack.models.Expense;
 import com.diodeit.spendtrack.utils.BengaliNumberConverter;
 import com.diodeit.spendtrack.utils.CsvImporter;
 import com.diodeit.spendtrack.utils.ExportHelper;
+import com.diodeit.spendtrack.utils.LocaleHelper;
 import com.diodeit.spendtrack.utils.PreferenceManager;
 import com.diodeit.spendtrack.utils.ReminderScheduler;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -48,6 +51,8 @@ public class SettingsFragment extends Fragment {
     private MaterialSwitch switchDailyReminder;
     private LinearLayout rowDailyReminder, rowBackup, rowRestore, rowClear, rowPrivacy, rowContact;
     private TextView tvReminderTime;
+    private LinearLayout rowLanguage, rowTheme;
+    private TextView tvLanguageValue, tvThemeValue;
 
     private PreferenceManager prefManager;
     private DatabaseHelper dbHelper;
@@ -69,7 +74,7 @@ public class SettingsFragment extends Fragment {
                     if (isGranted) {
                         ReminderScheduler.setDailyReminder(requireContext(), true);
                     } else {
-                        Toast.makeText(requireContext(), "নোটিফিকেশন পারমিশন ছাড়া রিমাইন্ডার কাজ করবে না", Toast.LENGTH_LONG).show();
+                        Toast.makeText(requireContext(), Tr.t("নোটিফিকেশন পারমিশন ছাড়া রিমাইন্ডার কাজ করবে না"), Toast.LENGTH_LONG).show();
                         switchDailyReminder.setChecked(false);
                         prefManager.setDailyReminder(false);
                     }
@@ -117,12 +122,17 @@ public class SettingsFragment extends Fragment {
         rowClear            = view.findViewById(R.id.row_clear);
         rowPrivacy          = view.findViewById(R.id.row_privacy);
         rowContact          = view.findViewById(R.id.row_contact);
+        rowLanguage         = view.findViewById(R.id.row_language);
+        rowTheme            = view.findViewById(R.id.row_theme);
+        tvLanguageValue     = view.findViewById(R.id.tv_language_value);
+        tvThemeValue        = view.findViewById(R.id.tv_theme_value);
     }
 
     private void loadSettings() {
         boolean isEnabled = prefManager.isDailyReminderEnabled();
         switchDailyReminder.setChecked(isEnabled);
         updateReminderTimeText();
+        updateLanguageAndThemeText();
         ReminderScheduler.setDailyReminder(requireContext(), isEnabled);
     }
 
@@ -130,7 +140,7 @@ public class SettingsFragment extends Fragment {
         int hour = prefManager.getReminderHour();
         int minute = prefManager.getReminderMinute();
 
-        String period = hour >= 12 ? "বিকাল/রাত" : "সকাল";
+        String period = hour >= 12 ? Tr.t("বিকাল/রাত") : Tr.t("সকাল");
         int displayHour = hour % 12;
         if (displayHour == 0) displayHour = 12;
 
@@ -138,7 +148,11 @@ public class SettingsFragment extends Fragment {
         String timeStr = bn.toBengali(String.valueOf(displayHour)) + ":" +
                 bn.toBengali(String.format(Locale.US, "%02d", minute));
 
-        tvReminderTime.setText(period + " " + timeStr + " টা");
+        if (Tr.isEnglish()) {
+            tvReminderTime.setText(timeStr + " " + period);
+        } else {
+            tvReminderTime.setText(period + " " + timeStr + " টা");
+        }
     }
 
     private void setupClickListeners() {
@@ -156,7 +170,7 @@ public class SettingsFragment extends Fragment {
                 ReminderScheduler.setDailyReminder(requireContext(), true);
             } else {
                 ReminderScheduler.setDailyReminder(requireContext(), false);
-                Toast.makeText(requireContext(), "রিমাইন্ডার বন্ধ করা হয়েছে", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), Tr.t("রিমাইন্ডার বন্ধ করা হয়েছে"), Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -168,11 +182,76 @@ public class SettingsFragment extends Fragment {
             showTimePicker();
         });
 
+        rowLanguage.setOnClickListener(v -> showLanguageDialog());
+        rowTheme.setOnClickListener(v -> showThemeDialog());
+
         rowBackup.setOnClickListener(v -> exportBackup());
         rowRestore.setOnClickListener(v -> openCsvPicker());
         rowClear.setOnClickListener(v -> confirmClear());
         rowPrivacy.setOnClickListener(v -> showPrivacyPolicy());
         rowContact.setOnClickListener(v -> showContactDialog());
+    }
+
+    // ─── Language & Theme ────────────────────────────────────────────
+
+    private void updateLanguageAndThemeText() {
+        tvLanguageValue.setText("en".equals(prefManager.getLanguage())
+                ? getString(R.string.english) : getString(R.string.bengali));
+
+        String mode = prefManager.getThemeMode();
+        if (PreferenceManager.THEME_LIGHT.equals(mode)) {
+            tvThemeValue.setText(R.string.theme_light);
+        } else if (PreferenceManager.THEME_DARK.equals(mode)) {
+            tvThemeValue.setText(R.string.theme_dark);
+        } else {
+            tvThemeValue.setText(R.string.theme_system);
+        }
+    }
+
+    private void showLanguageDialog() {
+        String[] items = { getString(R.string.bengali), getString(R.string.english) };
+        int checked = "en".equals(prefManager.getLanguage()) ? 1 : 0;
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.choose_language)
+                .setSingleChoiceItems(items, checked, (dialog, which) -> {
+                    String lang = (which == 1) ? "en" : "bn";
+                    dialog.dismiss();
+                    if (!lang.equals(prefManager.getLanguage())) {
+                        prefManager.setLanguage(lang);
+                        // restart the screen so every text uses the new language
+                        requireActivity().recreate();
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
+    }
+
+    private void showThemeDialog() {
+        String[] items = {
+                getString(R.string.theme_system),
+                getString(R.string.theme_light),
+                getString(R.string.theme_dark)
+        };
+        String current = prefManager.getThemeMode();
+        int checked = PreferenceManager.THEME_LIGHT.equals(current) ? 1
+                : PreferenceManager.THEME_DARK.equals(current) ? 2 : 0;
+
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.choose_theme)
+                .setSingleChoiceItems(items, checked, (dialog, which) -> {
+                    String mode = (which == 1) ? PreferenceManager.THEME_LIGHT
+                            : (which == 2) ? PreferenceManager.THEME_DARK
+                            : PreferenceManager.THEME_SYSTEM;
+                    dialog.dismiss();
+                    if (!mode.equals(prefManager.getThemeMode())) {
+                        prefManager.setThemeMode(mode);
+                        // this also restarts the screen with the new colors
+                        LocaleHelper.applyTheme(requireContext());
+                    }
+                })
+                .setNegativeButton(R.string.cancel, null)
+                .show();
     }
 
     private void showTimePicker() {
@@ -183,7 +262,7 @@ public class SettingsFragment extends Fragment {
                 .setTimeFormat(TimeFormat.CLOCK_12H)
                 .setHour(currentHour)
                 .setMinute(currentMinute)
-                .setTitleText("রিমাইন্ডারের সময় নির্বাচন করুন")
+                .setTitleText(Tr.t("রিমাইন্ডারের সময় নির্বাচন করুন"))
                 .build();
 
         picker.addOnPositiveButtonClickListener(v -> {
@@ -194,7 +273,7 @@ public class SettingsFragment extends Fragment {
             updateReminderTimeText();
             ReminderScheduler.setDailyReminder(requireContext(), true);
 
-            Toast.makeText(requireContext(), "সময় পরিবর্তন করা হয়েছে", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), Tr.t("সময় পরিবর্তন করা হয়েছে"), Toast.LENGTH_SHORT).show();
         });
 
         picker.show(getParentFragmentManager(), "TIME_PICKER");
@@ -210,22 +289,22 @@ public class SettingsFragment extends Fragment {
 
     private void showContactDialog() {
         String message =
-                "ডেভেলপার: মেহেদী হাসান\n\n" +
-                        "📧 ইমেইল: " + CONTACT_EMAIL + "\n" +
-                        "📞 মোবাইল: " + CONTACT_PHONE + "\n" +
-                        "💬 হোয়াটসঅ্যাপ: " + CONTACT_PHONE + "\n\n" +
-                        "আপনার মতামত, সমস্যা বা পরামর্শ জানাতে চাইলে " +
-                        "নিচের যেকোনো মাধ্যমে যোগাযোগ করুন।";
+                Tr.t("ডেভেলপার: মেহেদী হাসান\n\n") +
+                        Tr.t("📧 ইমেইল: ") + CONTACT_EMAIL + "\n" +
+                        Tr.t("📞 মোবাইল: ") + CONTACT_PHONE + "\n" +
+                        Tr.t("💬 হোয়াটসঅ্যাপ: ") + CONTACT_PHONE + "\n\n" +
+                        Tr.t("আপনার মতামত, সমস্যা বা পরামর্শ জানাতে চাইলে ") +
+                        Tr.t("নিচের যেকোনো মাধ্যমে যোগাযোগ করুন।");
 
         final String[] options = {
-                "📧  ইমেইল পাঠান",
-                "💬  হোয়াটসঅ্যাপে মেসেজ",
-                "📞  ফোন করুন",
-                "⭐  প্লে স্টোরে রিভিউ দিন"
+                Tr.t("📧  ইমেইল পাঠান"),
+                Tr.t("💬  হোয়াটসঅ্যাপে মেসেজ"),
+                Tr.t("📞  ফোন করুন"),
+                Tr.t("⭐  প্লে স্টোরে রিভিউ দিন")
         };
 
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("যোগাযোগ করুন")
+                .setTitle(Tr.t("যোগাযোগ করুন"))
                 .setMessage(message)
                 .setItems(options, (dialog, which) -> {
                     switch (which) {
@@ -235,25 +314,25 @@ public class SettingsFragment extends Fragment {
                         case 3: openPlayStore(); break;
                     }
                 })
-                .setNegativeButton("বন্ধ করুন", null)
+                .setNegativeButton(Tr.t("বন্ধ করুন"), null)
                 .show();
     }
 
     private void sendEmail() {
         Intent intent = new Intent(Intent.ACTION_SENDTO);
         intent.setData(Uri.parse("mailto:" + CONTACT_EMAIL));
-        intent.putExtra(Intent.EXTRA_SUBJECT, "স্পেন্ডট্র্যাক — মতামত / সমস্যা");
+        intent.putExtra(Intent.EXTRA_SUBJECT, Tr.t("স্পেন্ডট্র্যাক — মতামত / সমস্যা"));
         intent.putExtra(Intent.EXTRA_TEXT,
-                "আপনার মতামত বা সমস্যা এখানে লিখুন:\n\n\n" +
+                Tr.t("আপনার মতামত বা সমস্যা এখানে লিখুন:\n\n\n") +
                         "---\n" +
-                        "অ্যাপ সংস্করণ: " + appVersionName + "\n" +
-                        "ডিভাইস: " + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL + "\n" +
+                        Tr.t("অ্যাপ সংস্করণ: ") + appVersionName + "\n" +
+                        Tr.t("ডিভাইস: ") + android.os.Build.MANUFACTURER + " " + android.os.Build.MODEL + "\n" +
                         "Android: " + android.os.Build.VERSION.RELEASE);
         try {
-            startActivity(Intent.createChooser(intent, "ইমেইল পাঠান"));
+            startActivity(Intent.createChooser(intent, Tr.t("ইমেইল পাঠান")));
         } catch (Exception e) {
             Toast.makeText(requireContext(),
-                    "কোনো ইমেইল অ্যাপ পাওয়া যায়নি। সরাসরি ইমেইল করুন: " + CONTACT_EMAIL,
+                    Tr.t("কোনো ইমেইল অ্যাপ পাওয়া যায়নি। সরাসরি ইমেইল করুন: ") + CONTACT_EMAIL,
                     Toast.LENGTH_LONG).show();
         }
     }
@@ -261,12 +340,12 @@ public class SettingsFragment extends Fragment {
     private void openWhatsApp() {
         try {
             String url = "https://wa.me/" + CONTACT_WHATSAPP +
-                    "?text=" + Uri.encode("স্পেন্ডট্র্যাক অ্যাপ সম্পর্কে:");
+                    "?text=" + Uri.encode(Tr.t("স্পেন্ডট্র্যাক অ্যাপ সম্পর্কে:"));
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             startActivity(intent);
         } catch (Exception e) {
             Toast.makeText(requireContext(),
-                    "হোয়াটসঅ্যাপ ইনস্টল করা নেই। ফোন করুন: " + CONTACT_PHONE,
+                    Tr.t("হোয়াটসঅ্যাপ ইনস্টল করা নেই। ফোন করুন: ") + CONTACT_PHONE,
                     Toast.LENGTH_LONG).show();
         }
     }
@@ -278,7 +357,7 @@ public class SettingsFragment extends Fragment {
             startActivity(intent);
         } catch (Exception e) {
             Toast.makeText(requireContext(),
-                    "ফোন অ্যাপ পাওয়া যায়নি। ইমেইল করুন: " + CONTACT_EMAIL,
+                    Tr.t("ফোন অ্যাপ পাওয়া যায়নি। ইমেইল করুন: ") + CONTACT_EMAIL,
                     Toast.LENGTH_LONG).show();
         }
     }
@@ -297,7 +376,7 @@ public class SettingsFragment extends Fragment {
                 startActivity(intent);
             } catch (Exception e2) {
                 Toast.makeText(requireContext(),
-                        "প্লে স্টোর খোলা যায়নি", Toast.LENGTH_SHORT).show();
+                        Tr.t("প্লে স্টোর খোলা যায়নি"), Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -305,13 +384,13 @@ public class SettingsFragment extends Fragment {
     private void exportBackup() {
         List<Expense> all = dbHelper.getAllExpenses();
         if (all == null || all.isEmpty()) {
-            Toast.makeText(requireContext(), "কোনো ডেটা নেই", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), Tr.t("কোনো ডেটা নেই"), Toast.LENGTH_SHORT).show();
             return;
         }
         boolean ok = ExportHelper.exportCsv(requireContext(), all);
         Toast.makeText(requireContext(),
-                ok ? "ব্যাকআপ সম্পন্ন — Downloads/SpendTrack"
-                        : "ব্যাকআপ তৈরি ব্যর্থ",
+                ok ? Tr.t("ব্যাকআপ সম্পন্ন — Downloads/SpendTrack")
+                        : Tr.t("ব্যাকআপ তৈরি ব্যর্থ"),
                 Toast.LENGTH_LONG).show();
     }
 
@@ -324,30 +403,30 @@ public class SettingsFragment extends Fragment {
 
     private void performRestore(Uri uri) {
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("ডেটা রিস্টোর")
-                .setMessage("আপনি কি নির্বাচিত CSV ফাইল থেকে সব লেনদেন ইমপোর্ট করতে চান?\n\n" +
-                        "বর্তমান ডেটার সাথে যোগ হবে — কোনো ডেটা মুছে যাবে না।")
-                .setPositiveButton("ইমপোর্ট করুন", (d, w) -> doImport(uri))
-                .setNegativeButton("বাতিল", null)
+                .setTitle(Tr.t("ডেটা রিস্টোর"))
+                .setMessage(Tr.t("আপনি কি নির্বাচিত CSV ফাইল থেকে সব লেনদেন ইমপোর্ট করতে চান?\n\n") +
+                        Tr.t("বর্তমান ডেটার সাথে যোগ হবে — কোনো ডেটা মুছে যাবে না।"))
+                .setPositiveButton(Tr.t("ইমপোর্ট করুন"), (d, w) -> doImport(uri))
+                .setNegativeButton(Tr.t("বাতিল"), null)
                 .show();
     }
 
     private void doImport(Uri uri) {
-        Toast.makeText(requireContext(), "ইমপোর্ট হচ্ছে...", Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), Tr.t("ইমপোর্ট হচ্ছে..."), Toast.LENGTH_SHORT).show();
         new Thread(() -> {
             int imported = CsvImporter.importFromUri(requireContext(), uri, dbHelper);
             if (getActivity() == null) return;
             getActivity().runOnUiThread(() -> {
                 if (imported > 0) {
                     Toast.makeText(requireContext(),
-                            imported + "টি লেনদেন সফলভাবে ইমপোর্ট হয়েছে",
+                            imported + Tr.t("টি লেনদেন সফলভাবে ইমপোর্ট হয়েছে"),
                             Toast.LENGTH_LONG).show();
                 } else if (imported == 0) {
                     Toast.makeText(requireContext(),
-                            "ফাইলে কোনো লেনদেন পাওয়া যায়নি", Toast.LENGTH_LONG).show();
+                            Tr.t("ফাইলে কোনো লেনদেন পাওয়া যায়নি"), Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(requireContext(),
-                            "ইমপোর্ট ব্যর্থ হয়েছে", Toast.LENGTH_LONG).show();
+                            Tr.t("ইমপোর্ট ব্যর্থ হয়েছে"), Toast.LENGTH_LONG).show();
                 }
             });
         }).start();
@@ -355,35 +434,35 @@ public class SettingsFragment extends Fragment {
 
     private void confirmClear() {
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("সব ডেটা মুছুন")
-                .setMessage("আপনি কি নিশ্চিতভাবে সব লেনদেন এবং বাজেট মুছে ফেলতে চান? " +
-                        "এটি ফিরিয়ে আনা যাবে না।")
-                .setPositiveButton("মুছে ফেলুন", (dialog, which) -> {
+                .setTitle(Tr.t("সব ডেটা মুছুন"))
+                .setMessage(Tr.t("আপনি কি নিশ্চিতভাবে সব লেনদেন এবং বাজেট মুছে ফেলতে চান? ") +
+                        Tr.t("এটি ফিরিয়ে আনা যাবে না।"))
+                .setPositiveButton(Tr.t("মুছে ফেলুন"), (dialog, which) -> {
                     dbHelper.clearAllData();
                     Toast.makeText(requireContext(),
-                            "সব ডেটা মুছে ফেলা হয়েছে", Toast.LENGTH_SHORT).show();
+                            Tr.t("সব ডেটা মুছে ফেলা হয়েছে"), Toast.LENGTH_SHORT).show();
                 })
-                .setNegativeButton("বাতিল", null)
+                .setNegativeButton(Tr.t("বাতিল"), null)
                 .show();
     }
 
     private void showPrivacyPolicy() {
         String policy =
-                "স্পেন্ডট্র্যাক — গোপনীয়তা নীতি\n\n" +
-                        "১. আপনার সব আর্থিক তথ্য (খরচ, আয়) শুধুমাত্র আপনার " +
-                        "ডিভাইসের অভ্যন্তরীণ SQLite ডাটাবেসে সংরক্ষিত থাকে।\n\n" +
-                        "২. অ্যাপটি সম্পূর্ণ অফলাইনে কাজ করে — কোনো তথ্য কোনো " +
-                        "সার্ভারে পাঠানো হয় না।\n\n" +
-                        "৩. কোনো তৃতীয় পক্ষের সাথে কোনো ব্যক্তিগত তথ্য শেয়ার করা হয় না।\n\n" +
-                        "৪. অ্যাপটি কোনো ক্যামেরা বা ইন্টারনেট পারমিশন চায় না।\n\n" +
-                        "৫. 'সব ডেটা মুছুন' অপশন ব্যবহার করে যেকোনো সময় সব তথ্য " +
-                        "স্থায়ীভাবে মুছে ফেলা যায়।\n\n" +
-                        "যোগাযোগ: " + CONTACT_EMAIL;
+                Tr.t("স্পেন্ডট্র্যাক — গোপনীয়তা নীতি\n\n") +
+                        Tr.t("১. আপনার সব আর্থিক তথ্য (খরচ, আয়) শুধুমাত্র আপনার ") +
+                        Tr.t("ডিভাইসের অভ্যন্তরীণ SQLite ডাটাবেসে সংরক্ষিত থাকে।\n\n") +
+                        Tr.t("২. অ্যাপটি সম্পূর্ণ অফলাইনে কাজ করে — কোনো তথ্য কোনো ") +
+                        Tr.t("সার্ভারে পাঠানো হয় না।\n\n") +
+                        Tr.t("৩. কোনো তৃতীয় পক্ষের সাথে কোনো ব্যক্তিগত তথ্য শেয়ার করা হয় না।\n\n") +
+                        Tr.t("৪. অ্যাপটি কোনো ক্যামেরা বা ইন্টারনেট পারমিশন চায় না।\n\n") +
+                        Tr.t("৫. 'সব ডেটা মুছুন' অপশন ব্যবহার করে যেকোনো সময় সব তথ্য ") +
+                        Tr.t("স্থায়ীভাবে মুছে ফেলা যায়।\n\n") +
+                        Tr.t("যোগাযোগ: ") + CONTACT_EMAIL;
 
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("গোপনীয়তা নীতি")
+                .setTitle(Tr.t("গোপনীয়তা নীতি"))
                 .setMessage(policy)
-                .setPositiveButton("বুঝেছি", null)
+                .setPositiveButton(Tr.t("বুঝেছি"), null)
                 .show();
     }
 }

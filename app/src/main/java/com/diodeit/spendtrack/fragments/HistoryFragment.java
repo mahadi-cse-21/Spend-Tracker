@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.fragments;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -56,6 +58,9 @@ public class HistoryFragment extends Fragment {
     private SimpleDateFormat monthFormat;
     private List<Expense> allExpenses = new ArrayList<>();
     private List<Expense> filteredExpenses = new ArrayList<>();
+    // filter keys (never change with language); labels are translated when shown
+    private static final String F_ALL = "ALL", F_EXPENSE = "EXPENSE", F_INCOME = "INCOME",
+            F_LOAN = "LOAN", F_CASH = "CASH";
     private String selectedFilter;
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -76,13 +81,14 @@ public class HistoryFragment extends Fragment {
         dbHelper = DatabaseHelper.get(requireContext());
         bnConverter = new BengaliNumberConverter();
         currentCal = Calendar.getInstance();
-        monthFormat = new SimpleDateFormat("MMMM yyyy", new Locale("bn", "BD"));
-        selectedFilter = getString(R.string.all_categories);
+        monthFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
+        selectedFilter = F_ALL;
 
         initViews(view);
         setupRecyclerView();
         setupFilterChips();
         setupSearch();
+        lastLoadedVersion = -1;   // new view must always load its data
         loadTransactions();
         setupClickListeners(view);
 
@@ -112,14 +118,10 @@ public class HistoryFragment extends Fragment {
     }
 
     private void setupFilterChips() {
-        String[] filters = {
-                getString(R.string.all_categories),
-                "খরচ", "আয়", "ঋণ",
-                getString(R.string.pay_cash_short)
-        };
+        String[] filters = { F_ALL, F_EXPENSE, F_INCOME, F_LOAN, F_CASH };
         for (String filter : filters) {
             Chip chip = new Chip(requireContext());
-            chip.setText(filter);
+            chip.setText(filterLabel(filter));
             chip.setCheckable(true);
             chip.setClickable(true);
             chip.setChecked(filter.equals(selectedFilter));
@@ -130,6 +132,16 @@ public class HistoryFragment extends Fragment {
                 }
             });
             cgFilters.addView(chip);
+        }
+    }
+
+    private String filterLabel(String key) {
+        switch (key) {
+            case F_EXPENSE: return Tr.t("খরচ");
+            case F_INCOME:  return Tr.t("আয়");
+            case F_LOAN:    return Tr.t("ঋণ");
+            case F_CASH:    return getString(R.string.pay_cash_short);
+            default:        return getString(R.string.all_categories);
         }
     }
 
@@ -178,7 +190,6 @@ public class HistoryFragment extends Fragment {
         final String query = etSearch.getText().toString().toLowerCase();
         final String filter = selectedFilter;
         final List<Expense> source = allExpenses;
-        final String allCategories = getString(R.string.all_categories);
 
         // ★ Run filtering in background
         MainActivity.io().execute(() -> {
@@ -193,20 +204,22 @@ public class HistoryFragment extends Fragment {
 
                 boolean matchesQuery =
                         cat.toLowerCase().contains(query) ||
+                                Tr.data(cat).toLowerCase().contains(query) ||
                                 summary.toLowerCase().contains(query) ||
                                 note.toLowerCase().contains(query);
 
                 boolean matchesFilter;
-                if (filter.equals(allCategories)) {
+                if (F_ALL.equals(filter)) {
                     matchesFilter = true;
-                } else if (filter.equals("খরচ")) {
+                } else if (F_EXPENSE.equals(filter)) {
                     matchesFilter = !e.isIncome();
-                } else if (filter.equals("আয়")) {
+                } else if (F_INCOME.equals(filter)) {
                     matchesFilter = e.isIncome();
-                } else if (filter.equals("ঋণ")) {
+                } else if (F_LOAN.equals(filter)) {
                     matchesFilter = cat.equals("ঋণ") || cat.equals("ঋণ পরিশোধ");
                 } else {
-                    matchesFilter = cat.contains(filter) || pay.contains(filter);
+                    // cash
+                    matchesFilter = pay.contains("ক্যাশ") || pay.equalsIgnoreCase("cash");
                 }
 
                 if (matchesQuery && matchesFilter) {
@@ -264,7 +277,7 @@ public class HistoryFragment extends Fragment {
 
         sheetView.findViewById(R.id.btn_export_pdf).setOnClickListener(v -> {
             if (filteredExpenses == null || filteredExpenses.isEmpty()) {
-                Toast.makeText(requireContext(), "কোনো লেনদেন নেই", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), Tr.t("কোনো লেনদেন নেই"), Toast.LENGTH_SHORT).show();
                 return;
             }
             double income = 0, expense = 0;
@@ -277,19 +290,19 @@ public class HistoryFragment extends Fragment {
             boolean ok = ExportHelper.exportPdf(requireContext(), filteredExpenses,
                     income, expense, balance, label);
             Toast.makeText(requireContext(),
-                    ok ? "পিডিএফ ডাউনলোড সম্পন্ন — Downloads/SpendTrack" : "পিডিএফ তৈরি ব্যর্থ",
+                    ok ? Tr.t("পিডিএফ ডাউনলোড সম্পন্ন — Downloads/SpendTrack") : Tr.t("পিডিএফ তৈরি ব্যর্থ"),
                     Toast.LENGTH_LONG).show();
             if (ok) dialog.dismiss();
         });
 
         sheetView.findViewById(R.id.btn_export_csv).setOnClickListener(v -> {
             if (filteredExpenses == null || filteredExpenses.isEmpty()) {
-                Toast.makeText(requireContext(), "কোনো লেনদেন নেই", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), Tr.t("কোনো লেনদেন নেই"), Toast.LENGTH_SHORT).show();
                 return;
             }
             boolean ok = ExportHelper.exportCsv(requireContext(), filteredExpenses);
             Toast.makeText(requireContext(),
-                    ok ? "ব্যাকআপ সম্পন্ন — Downloads/SpendTrack" : "ব্যাকআপ তৈরি ব্যর্থ",
+                    ok ? Tr.t("ব্যাকআপ সম্পন্ন — Downloads/SpendTrack") : Tr.t("ব্যাকআপ তৈরি ব্যর্থ"),
                     Toast.LENGTH_LONG).show();
             if (ok) dialog.dismiss();
         });
@@ -301,5 +314,15 @@ public class HistoryFragment extends Fragment {
     public void onResume() {
         super.onResume();
         loadTransactions();
+    }
+
+    // When the tab is shown again (hide/show), load the data again
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            lastLoadedVersion = -1;
+            loadTransactions();
+        }
     }
 }

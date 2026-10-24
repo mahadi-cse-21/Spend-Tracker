@@ -12,6 +12,11 @@ public class PreferenceManager {
     private static final String KEY_BUDGET_ALERTS = "budget_alerts";
     private static final String KEY_VIBRATION = "vibration";
     private static final String KEY_SAFE_SPEND = "safe_spend";
+    private static final String KEY_THEME = "theme_mode";
+
+    public static final String THEME_SYSTEM = "system";
+    public static final String THEME_LIGHT  = "light";
+    public static final String THEME_DARK   = "dark";
 
     // ★ NEW: Keys for Reminder Time
     private static final String KEY_REMINDER_HOUR = "reminder_hour";
@@ -25,6 +30,9 @@ public class PreferenceManager {
 
     public String getLanguage() { return prefs.getString(KEY_LANGUAGE, "bn"); }
     public void setLanguage(String lang) { prefs.edit().putString(KEY_LANGUAGE, lang).apply(); }
+
+    public String getThemeMode() { return prefs.getString(KEY_THEME, THEME_SYSTEM); }
+    public void setThemeMode(String mode) { prefs.edit().putString(KEY_THEME, mode).apply(); }
 
     public String getCurrency() { return prefs.getString(KEY_CURRENCY, "BDT"); }
     public void setCurrency(String currency) { prefs.edit().putString(KEY_CURRENCY, currency).apply(); }

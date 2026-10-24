@@ -13,7 +13,7 @@
         android:id="@+id/tv_pay_person"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ব্যক্তি"
+        android:text="@string/ui_013"
         android:textColor="@color/on_surface"
         android:textSize="15sp"
         android:textStyle="bold" />
@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:text="বাকি: ৳ ০"
+        android:text="@string/ui_014"
         android:textColor="@color/on_surface_variant"
         android:textSize="13sp" />
 
@@ -33,7 +33,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="পরিশোধের পরিমাণ (৳)"
+        android:hint="@string/ui_015"
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"

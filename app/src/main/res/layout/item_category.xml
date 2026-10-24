@@ -27,7 +27,7 @@
         android:ellipsize="end"
         android:gravity="center"
         android:maxLines="1"
-        android:text="খাবার"
+        android:text="@string/cat_food_short"
         android:textColor="@color/on_surface"
         android:textSize="11sp" />
 </LinearLayout>

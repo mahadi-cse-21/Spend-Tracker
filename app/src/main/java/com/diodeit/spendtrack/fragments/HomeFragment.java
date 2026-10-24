@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.fragments;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -60,6 +62,7 @@ public class HomeFragment extends Fragment {
         initViews(view);
         setupRecyclerViews();
         setupClickListeners(view);
+        lastLoadedVersion = -1;   // new view must always load its data
         loadData();
 
         return view;
@@ -150,13 +153,13 @@ public class HomeFragment extends Fragment {
 
                 if (tvTotalIncome != null) tvTotalIncome.setText(bnConverter.formatCurrency(income));
                 if (tvTotalExpense != null) tvTotalExpense.setText(bnConverter.formatCurrency(expense));
-                if (tvTotalEntries != null) tvTotalEntries.setText(bnConverter.toBengali(count) + "টি এন্ট্রি");
+                if (tvTotalEntries != null) tvTotalEntries.setText(bnConverter.toBengali(count) + Tr.t("টি এন্ট্রি"));
 
                 if (tvRemainingBudget != null) tvRemainingBudget.setText(bnConverter.toBengali(
                         String.format(Locale.US, "%,.0f", Math.max(balance, 0))));
-                if (tvSpentLabel != null) tvSpentLabel.setText("আয়: ৳" + bnConverter.toBengali(
+                if (tvSpentLabel != null) tvSpentLabel.setText(Tr.t("আয়: ৳") + bnConverter.toBengali(
                         String.format(Locale.US, "%,.0f", income)));
-                if (tvBudgetGoal != null) tvBudgetGoal.setText("ব্যয়: ৳" + bnConverter.toBengali(
+                if (tvBudgetGoal != null) tvBudgetGoal.setText(Tr.t("ব্যয়: ৳") + bnConverter.toBengali(
                         String.format(Locale.US, "%,.0f", expense)));
                 if (tvDailyAverage != null) tvDailyAverage.setText(bnConverter.formatCurrency(dailyAvg));
 
@@ -164,16 +167,16 @@ public class HomeFragment extends Fragment {
                         ? (int) Math.min((expense / income) * 100, 100) : 0;
                 if (budgetProgress != null) budgetProgress.setProgress(progress);
                 if (tvBudgetUsed != null) tvBudgetUsed.setText(
-                        bnConverter.toBengali(progress) + "% ব্যয় হয়েছে");
+                        bnConverter.toBengali(progress) + Tr.t("% ব্যয় হয়েছে"));
 
                 if (tvSpendingPace != null) {
                     if (monthIncome > 0 && monthExpense > monthIncome * 0.8) {
-                        tvSpendingPace.setText("সতর্কতা");
+                        tvSpendingPace.setText(Tr.t("সতর্কতা"));
                         tvSpendingPace.setBackgroundResource(R.drawable.bg_pill_error);
                         tvSpendingPace.setTextColor(ContextCompat.getColor(
                                 requireContext(), R.color.on_error));
                     } else {
-                        tvSpendingPace.setText("স্বাভাবিক");
+                        tvSpendingPace.setText(Tr.t("স্বাভাবিক"));
                         tvSpendingPace.setBackgroundResource(R.drawable.bg_pill_primary_fixed);
                         tvSpendingPace.setTextColor(ContextCompat.getColor(
                                 requireContext(), R.color.on_primary_fixed));
@@ -199,7 +202,7 @@ public class HomeFragment extends Fragment {
                     }
                 }
                 if (tvTodayCount != null) tvTodayCount.setText(
-                        bnConverter.toBengali(todayList.size()) + "টি এন্ট্রি");
+                        bnConverter.toBengali(todayList.size()) + Tr.t("টি এন্ট্রি"));
 
                 if (recentAdapter != null) recentAdapter.setExpenses(recentList);
             });
@@ -210,5 +213,15 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
         loadData();
+    }
+
+    // When the tab is shown again (hide/show), load the data again
+    @Override
+    public void onHiddenChanged(boolean hidden) {
+        super.onHiddenChanged(hidden);
+        if (!hidden) {
+            lastLoadedVersion = -1;
+            loadData();
+        }
     }
 }

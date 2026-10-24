@@ -127,7 +127,7 @@
                                         android:drawablePadding="4dp"
                                         android:drawableTint="@color/primary"
                                         android:gravity="center_vertical"
-                                        android:text="আয়"
+                                        android:text="@string/ui_017"
                                         android:textColor="@color/on_surface_variant"
                                         android:textSize="11sp" />
 
@@ -136,7 +136,7 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:layout_marginTop="6dp"
-                                        android:text="৳০"
+                                        android:text="@string/ui_037"
                                         android:textColor="@color/primary"
                                         android:textSize="18sp"
                                         android:textStyle="bold" />
@@ -163,7 +163,7 @@
                                         android:drawablePadding="4dp"
                                         android:drawableTint="@color/error"
                                         android:gravity="center_vertical"
-                                        android:text="ব্যয়"
+                                        android:text="@string/ui_038"
                                         android:textColor="@color/on_surface_variant"
                                         android:textSize="11sp" />
 
@@ -172,7 +172,7 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:layout_marginTop="6dp"
-                                        android:text="৳০"
+                                        android:text="@string/ui_037"
                                         android:textColor="@color/error"
                                         android:textSize="18sp"
                                         android:textStyle="bold" />
@@ -217,7 +217,7 @@
                                     android:id="@+id/tv_total_transactions"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="০"
+                                    android:text="@string/ui_024"
                                     android:textColor="@color/on_surface"
                                     android:textSize="18sp"
                                     android:textStyle="bold" />

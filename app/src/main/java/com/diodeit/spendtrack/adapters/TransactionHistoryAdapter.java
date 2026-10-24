@@ -1,5 +1,9 @@
 package com.diodeit.spendtrack.adapters;
 
+import androidx.core.content.ContextCompat;
+
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -61,23 +65,23 @@ public class TransactionHistoryAdapter extends RecyclerView.Adapter<TransactionH
 
         // Subtext
         if (expense.getItems() != null && expense.getItems().size() > 1) {
-            String label = isIncome ? "টি আয়" : "টি খরচ";
+            String label = isIncome ? Tr.t("টি আয়") : Tr.t("টি খরচ");
             holder.tvCategory.setText(expense.getItems().size() + label);
         } else {
-            holder.tvCategory.setText(expense.getCategory());
+            holder.tvCategory.setText(Tr.data(expense.getCategory()));
         }
 
-        holder.tvPayment.setText(expense.getPaymentMethod());
+        holder.tvPayment.setText(Tr.data(expense.getPaymentMethod()));
 
         // Amount — color + sign depend on type
         String amountStr = bnConverter.toBengali(
                 String.format(Locale.US, "%,.0f", expense.getAmount()));
         if (isIncome) {
             holder.tvAmount.setText("+৳" + amountStr);
-            holder.tvAmount.setTextColor(0xFF00513C);   // green
+            holder.tvAmount.setTextColor(ContextCompat.getColor(holder.tvAmount.getContext(), R.color.primary));   // green
         } else {
             holder.tvAmount.setText("-৳" + amountStr);
-            holder.tvAmount.setTextColor(0xFFBA1A1A);   // red
+            holder.tvAmount.setTextColor(ContextCompat.getColor(holder.tvAmount.getContext(), R.color.error));   // red
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("hh:mm a", Locale.getDefault());

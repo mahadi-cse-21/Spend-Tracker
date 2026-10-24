@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.utils;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -50,8 +52,8 @@ public class ReminderReceiver extends BroadcastReceiver {
         // Build the notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channelId)
                 .setSmallIcon(R.drawable.ic_receipt_long)
-                .setContentTitle("স্পেন্ডট্র্যাক রিমাইন্ডার")
-                .setContentText("আজকের খরচ কি যোগ করেছেন? নাকি আমাকে ভুলে গেলেন। এখনই অ্যাপে গিয়ে হিসাব আপডেট করুন। ")
+                .setContentTitle(Tr.t("স্পেন্ডট্র্যাক রিমাইন্ডার"))
+                .setContentText(Tr.t("আজকের খরচ কি যোগ করেছেন? নাকি আমাকে ভুলে গেলেন। এখনই অ্যাপে গিয়ে হিসাব আপডেট করুন। "))
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true);

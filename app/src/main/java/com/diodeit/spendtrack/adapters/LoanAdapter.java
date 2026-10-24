@@ -1,5 +1,9 @@
 package com.diodeit.spendtrack.adapters;
 
+import androidx.core.content.ContextCompat;
+
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,7 +55,7 @@ public class LoanAdapter extends RecyclerView.Adapter<LoanAdapter.VH> {
         Loan l = loans.get(position);
 
         h.tvPerson.setText(l.getPersonName());
-        h.tvLoanType.setText(l.isTaken() ? "আমি ঋণ নিয়েছি" : "আমি ঋণ দিয়েছি");
+        h.tvLoanType.setText(l.isTaken() ? Tr.t("আমি ঋণ নিয়েছি") : Tr.t("আমি ঋণ দিয়েছি"));
         h.ivIcon.setImageResource(l.isTaken()
                 ? R.drawable.ic_payments
                 : R.drawable.ic_donate);
@@ -64,18 +68,18 @@ public class LoanAdapter extends RecyclerView.Adapter<LoanAdapter.VH> {
                 String.format(Locale.US, "%,.0f", l.getPrincipalAmount()));
 
         h.tvRemaining.setText("৳ " + remainingStr);
-        h.tvPaid.setText("পরিশোধ: ৳ " + paidStr);
-        h.tvTotal.setText("মোট: ৳ " + totalStr);
+        h.tvPaid.setText(Tr.t("পরিশোধ: ৳ ") + paidStr);
+        h.tvTotal.setText(Tr.t("মোট: ৳ ") + totalStr);
 
         if (l.isClosed()) {
-            h.tvStatus.setText("সম্পূর্ণ পরিশোধিত");
-            h.tvRemaining.setTextColor(0xFF00513C);   // green
-            h.progressLoan.setIndicatorColor(0xFF00513C);
+            h.tvStatus.setText(Tr.t("সম্পূর্ণ পরিশোধিত"));
+            h.tvRemaining.setTextColor(ContextCompat.getColor(h.tvRemaining.getContext(), R.color.primary));   // green
+            h.progressLoan.setIndicatorColor(ContextCompat.getColor(h.tvRemaining.getContext(), R.color.primary));
             h.btnPayLoan.setVisibility(View.GONE);
         } else {
-            h.tvStatus.setText(l.isTaken() ? "বাকি" : "পাব");
-            h.tvRemaining.setTextColor(0xFFBA1A1A);   // red
-            h.progressLoan.setIndicatorColor(0xFFBA1A1A);
+            h.tvStatus.setText(l.isTaken() ? Tr.t("বাকি") : Tr.t("পাব"));
+            h.tvRemaining.setTextColor(ContextCompat.getColor(h.tvRemaining.getContext(), R.color.error));   // red
+            h.progressLoan.setIndicatorColor(ContextCompat.getColor(h.tvRemaining.getContext(), R.color.error));
             h.btnPayLoan.setVisibility(View.VISIBLE);
         }
 

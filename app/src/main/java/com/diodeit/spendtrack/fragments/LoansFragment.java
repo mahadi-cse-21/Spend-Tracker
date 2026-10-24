@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.fragments;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -94,7 +96,7 @@ public class LoansFragment extends Fragment {
             mainHandler.post(() -> {
                 if (!isAdded()) return;
                 if (loan != null) showAddLoanDialog(loan);
-                else Toast.makeText(requireContext(), "ঋণ পাওয়া যায়নি", Toast.LENGTH_SHORT).show();
+                else Toast.makeText(requireContext(), Tr.t("ঋণ পাওয়া যায়নি"), Toast.LENGTH_SHORT).show();
             });
         });
         autoEditLoanId = -1;
@@ -177,25 +179,25 @@ public class LoansFragment extends Fragment {
         }
 
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle(editing ? "ঋণ এডিট করুন" : "নতুন ঋণ")
+                .setTitle(editing ? Tr.t("ঋণ এডিট করুন") : Tr.t("নতুন ঋণ"))
                 .setView(v)
-                .setPositiveButton(editing ? "আপডেট" : "সংরক্ষণ", (d, w) -> {
+                .setPositiveButton(editing ? Tr.t("আপডেট") : Tr.t("সংরক্ষণ"), (d, w) -> {
                     String person = etPerson.getText().toString().trim();
                     String amtStr = etAmount.getText().toString().trim();
                     String note   = etNote.getText().toString().trim();
 
                     if (person.isEmpty() || amtStr.isEmpty()) {
-                        Toast.makeText(requireContext(), "নাম ও পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), Tr.t("নাম ও পরিমাণ দিন"), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     double amount;
                     try { amount = Double.parseDouble(bn.toEnglish(amtStr)); }
                     catch (NumberFormatException ex) {
-                        Toast.makeText(requireContext(), "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), Tr.t("সঠিক পরিমাণ দিন"), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     if (amount <= 0) {
-                        Toast.makeText(requireContext(), "পরিমাণ ০ এর চেয়ে বড় হতে হবে", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), Tr.t("পরিমাণ ০ এর চেয়ে বড় হতে হবে"), Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -207,7 +209,7 @@ public class LoansFragment extends Fragment {
                         if (editing) {
                             if (fAmount < existing.getPaidAmount()) {
                                 mainHandler.post(() -> Toast.makeText(requireContext(),
-                                        "পরিমাণ পরিশোধিত পরিমাণের চেয়ে কম হতে পারে না",
+                                        Tr.t("পরিমাণ পরিশোধিত পরিমাণের চেয়ে কম হতে পারে না"),
                                         Toast.LENGTH_LONG).show());
                                 return;
                             }
@@ -221,7 +223,7 @@ public class LoansFragment extends Fragment {
                             mainHandler.post(() -> {
                                 if (!isAdded()) return;
                                 lastLoadedVersion = -1;
-                                Toast.makeText(requireContext(), "আপডেট হয়েছে", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(requireContext(), Tr.t("আপডেট হয়েছে"), Toast.LENGTH_SHORT).show();
                                 loadLoans();
                             });
                         } else {
@@ -265,13 +267,13 @@ public class LoansFragment extends Fragment {
                             mainHandler.post(() -> {
                                 if (!isAdded()) return;
                                 lastLoadedVersion = -1;
-                                Toast.makeText(requireContext(), "ঋণ যোগ করা হয়েছে", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(requireContext(), Tr.t("ঋণ যোগ করা হয়েছে"), Toast.LENGTH_SHORT).show();
                                 loadLoans();
                             });
                         }
                     });
                 })
-                .setNegativeButton("বাতিল", null)
+                .setNegativeButton(Tr.t("বাতিল"), null)
                 .show();
     }
 
@@ -327,29 +329,29 @@ public class LoansFragment extends Fragment {
         EditText etAmount    = v.findViewById(R.id.et_pay_amount);
 
         tvPerson.setText(loan.getPersonName());
-        tvRemaining.setText("বাকি: ৳ " + bn.toBengali(
+        tvRemaining.setText(Tr.t("বাকি: ৳ ") + bn.toBengali(
                 String.format(Locale.US, "%,.0f", loan.getRemaining())));
         etAmount.setText(String.format(Locale.US, "%.0f", loan.getRemaining()));
 
-        String title = loan.isTaken() ? "ঋণ পরিশোধ করুন" : "ঋণ ফেরত পেয়েছি";
+        String title = loan.isTaken() ? Tr.t("ঋণ পরিশোধ করুন") : Tr.t("ঋণ ফেরত পেয়েছি");
 
         new MaterialAlertDialogBuilder(requireContext())
                 .setTitle(title)
                 .setView(v)
-                .setPositiveButton("নিশ্চিত", (d, w) -> {
+                .setPositiveButton(Tr.t("নিশ্চিত"), (d, w) -> {
                     String amtStr = etAmount.getText().toString().trim();
                     if (amtStr.isEmpty()) {
-                        Toast.makeText(requireContext(), "পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), Tr.t("পরিমাণ দিন"), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     double pay;
                     try { pay = Double.parseDouble(bn.toEnglish(amtStr)); }
                     catch (NumberFormatException ex) {
-                        Toast.makeText(requireContext(), "সঠিক পরিমাণ দিন", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), Tr.t("সঠিক পরিমাণ দিন"), Toast.LENGTH_SHORT).show();
                         return;
                     }
                     if (pay <= 0) {
-                        Toast.makeText(requireContext(), "পরিমাণ ০ এর চেয়ে বড় হতে হবে", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(requireContext(), Tr.t("পরিমাণ ০ এর চেয়ে বড় হতে হবে"), Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -388,31 +390,31 @@ public class LoansFragment extends Fragment {
                             if (!isAdded()) return;
                             lastLoadedVersion = -1;
                             loadLoans();
-                            Toast.makeText(requireContext(), "পরিশোধ রেকর্ড হয়েছে", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), Tr.t("পরিশোধ রেকর্ড হয়েছে"), Toast.LENGTH_SHORT).show();
                         });
                     });
                 })
-                .setNegativeButton("বাতিল", null)
+                .setNegativeButton(Tr.t("বাতিল"), null)
                 .show();
     }
 
     private void confirmDelete(Loan loan) {
         new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("ঋণ মুছুন")
-                .setMessage(loan.getPersonName() + " এর ঋণ মুছে ফেলতে চান?\n\n" +
-                        "এটি সংশ্লিষ্ট সব খরচ/আয়ের হিসাবও মুছে ফেলবে।")
-                .setPositiveButton("মুছে ফেলুন", (d, w) -> {
+                .setTitle(Tr.t("ঋণ মুছুন"))
+                .setMessage(loan.getPersonName() + Tr.t(" এর ঋণ মুছে ফেলতে চান?\n\n") +
+                        Tr.t("এটি সংশ্লিষ্ট সব খরচ/আয়ের হিসাবও মুছে ফেলবে।"))
+                .setPositiveButton(Tr.t("মুছে ফেলুন"), (d, w) -> {
                     MainActivity.io().execute(() -> {
                         db.deleteLoan(loan.getId());
                         mainHandler.post(() -> {
                             if (!isAdded()) return;
                             lastLoadedVersion = -1;
                             loadLoans();
-                            Toast.makeText(requireContext(), "ঋণ মুছে ফেলা হয়েছে", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(requireContext(), Tr.t("ঋণ মুছে ফেলা হয়েছে"), Toast.LENGTH_SHORT).show();
                         });
                     });
                 })
-                .setNegativeButton("বাতিল", null)
+                .setNegativeButton(Tr.t("বাতিল"), null)
                 .show();
     }
 

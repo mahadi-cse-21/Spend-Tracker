@@ -1,7 +1,6 @@
 package com.diodeit.spendtrack;
 
 import android.content.Context;
-import android.content.res.Configuration;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.View;
@@ -20,11 +19,10 @@ import com.diodeit.spendtrack.fragments.AnalyticsFragment;
 import com.diodeit.spendtrack.fragments.HistoryFragment;
 import com.diodeit.spendtrack.fragments.HomeFragment;
 import com.diodeit.spendtrack.fragments.SettingsFragment;
-import com.diodeit.spendtrack.utils.PreferenceManager;
+import com.diodeit.spendtrack.utils.LocaleHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG_ADD       = "ADD";
     private static final String TAG_ANALYTICS = "ANALYTICS";
     private static final String TAG_SETTINGS  = "SETTINGS";
+
+    private static final String KEY_ACTIVE_TAB = "active_tab";
 
     private static final ExecutorService IO = Executors.newFixedThreadPool(2);
     public static ExecutorService io() { return IO; }
@@ -50,24 +50,10 @@ public class MainActivity extends AppCompatActivity {
     private final Map<String, Fragment> tabFragments = new HashMap<>();
     private String activeTabTag = null;
 
+    // Applies the saved language (Bangla / English)
     @Override
     protected void attachBaseContext(Context newBase) {
-        PreferenceManager prefManager = new PreferenceManager(newBase);
-        String lang = prefManager.getLanguage();
-
-        Locale locale = "en".equals(lang)
-                ? new Locale("en", "US")
-                : new Locale("bn", "BD");
-
-        Locale.setDefault(locale);
-
-        Configuration config = new Configuration(newBase.getResources().getConfiguration());
-        config.fontScale = 1.0f;
-        config.setLocale(locale);
-        config.setLayoutDirection(locale);
-
-        Context context = newBase.createConfigurationContext(config);
-        super.attachBaseContext(context);
+        super.attachBaseContext(LocaleHelper.wrap(newBase));
     }
 
     @Override
@@ -89,21 +75,46 @@ public class MainActivity extends AppCompatActivity {
             showTab(TAG_HOME);
             selectNavItem(TAG_HOME);
         } else {
+            // Screen was restarted (theme / language change, rotation, ...)
             tabFragments.clear();
             for (Fragment f : fragmentManager.getFragments()) {
                 if (f != null && f.getTag() != null && isTabTag(f.getTag())) {
                     tabFragments.put(f.getTag(), f);
-                    if (f.isVisible()) {
-                        activeTabTag = f.getTag();
-                    }
+                }
+            }
+
+            // Which tab was open before the restart?
+            String savedTab = savedInstanceState.getString(KEY_ACTIVE_TAB);
+            if (savedTab != null && tabFragments.containsKey(savedTab)) {
+                activeTabTag = savedTab;
+            } else {
+                for (Fragment f : tabFragments.values()) {
+                    if (!f.isHidden()) activeTabTag = f.getTag();
                 }
             }
             if (activeTabTag == null) {
                 activeTabTag = TAG_HOME;
             }
+
+            // Make sure ONLY the active tab is visible
+            // (this fixes Settings showing behind another screen)
+            FragmentTransaction fix = fragmentManager.beginTransaction();
+            for (Map.Entry<String, Fragment> en : tabFragments.entrySet()) {
+                if (en.getKey().equals(activeTabTag)) fix.show(en.getValue());
+                else fix.hide(en.getValue());
+            }
+            fix.commitNowAllowingStateLoss();
+
             currentTag = activeTabTag;
             selectNavItem(currentTag);
         }
+    }
+
+    // Remember the open tab so it can be restored after a restart
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(KEY_ACTIVE_TAB, activeTabTag);
     }
 
     public DatabaseHelper getDb() {
@@ -133,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
                     FragmentManager.POP_BACK_STACK_INCLUSIVE);
         }
 
-        // ADD এবং HOME ট্যাবে ক্লিক করলে পুরনো ফ্র্যাগমেন্ট রিমুভ করে নতুন তৈরি করব
+        // Tapping ADD or HOME removes the old fragment and creates a fresh one
         if (TAG_ADD.equals(tag) || TAG_HOME.equals(tag)) {
             Fragment oldFrag = tabFragments.remove(tag);
             if (oldFrag != null) {
@@ -308,4 +319,6 @@ public class MainActivity extends AppCompatActivity {
             bottomNav.setVisibility(target);
         }
     }
+
+
 }

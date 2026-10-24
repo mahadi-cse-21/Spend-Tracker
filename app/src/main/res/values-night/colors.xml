@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DARK MODE colors. Same names as values/colors.xml, so every screen switches automatically. -->
+<resources>
+    <!-- Primary (green is made a little lighter so it is readable on dark) -->
+    <color name="primary">#27916C</color>
+    <color name="primary_container">#006C50</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_primary_container">#94EAC7</color>
+    <color name="primary_fixed">#9DF4D0</color>
+    <color name="primary_fixed_dim">#82D7B5</color>
+    <color name="on_primary_fixed">#002116</color>
+    <color name="on_primary_fixed_variant">#9DF4D0</color>
+
+    <!-- Secondary -->
+    <color name="secondary">#2E97AA</color>
+    <color name="secondary_container">#004E5A</color>
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="on_secondary_container">#A4EEFF</color>
+    <color name="secondary_fixed">#A4EEFF</color>
+    <color name="secondary_fixed_dim">#86D2E3</color>
+    <color name="on_secondary_fixed">#001F25</color>
+    <color name="on_secondary_fixed_variant">#A4EEFF</color>
+
+    <!-- Tertiary -->
+    <color name="tertiary">#5E8F7D</color>
+    <color name="tertiary_container">#284E41</color>
+    <color name="on_tertiary">#FFFFFF</color>
+    <color name="on_tertiary_container">#C2ECDA</color>
+    <color name="tertiary_fixed">#C2ECDA</color>
+    <color name="tertiary_fixed_dim">#A6CFBE</color>
+    <color name="on_tertiary_fixed">#002117</color>
+    <color name="on_tertiary_fixed_variant">#C2ECDA</color>
+
+    <!-- Error -->
+    <color name="error">#E5534B</color>
+    <color name="error_container">#5C1A17</color>
+    <color name="on_error">#FFFFFF</color>
+    <color name="on_error_container">#FFDAD6</color>
+
+    <!-- Surface -->
+    <color name="surface">#101413</color>
+    <color name="surface_dim">#101413</color>
+    <color name="surface_bright">#363A38</color>
+    <color name="on_surface">#E0E3E0</color>
+    <color name="surface_variant">#3F4944</color>
+    <color name="on_surface_variant">#BEC9C2</color>
+    <color name="surface_tint">#82D7B5</color>
+
+    <!-- Surface Containers -->
+    <color name="surface_container_lowest">#161A19</color>
+    <color name="surface_container_low">#1B1F1E</color>
+    <color name="surface_container">#212524</color>
+    <color name="surface_container_high">#2B2F2E</color>
+    <color name="surface_container_highest">#363A39</color>
+
+    <!-- Inverse -->
+    <color name="inverse_surface">#E0E3E0</color>
+    <color name="inverse_on_surface">#2E3130</color>
+    <color name="inverse_primary">#006C50</color>
+
+    <!-- Outline -->
+    <color name="outline">#89938D</color>
+    <color name="outline_variant">#3F4944</color>
+
+    <!-- Background -->
+    <color name="background">#101413</color>
+    <color name="on_background">#E0E3E0</color>
+
+    <!-- Warning (orange) used for "near the limit" -->
+    <color name="warning">#FFB870</color>
+</resources>

@@ -1,5 +1,7 @@
 package com.diodeit.spendtrack.adapters;
 
+import com.diodeit.spendtrack.utils.Tr;
+
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -51,7 +53,7 @@ public class AddedItemAdapter extends RecyclerView.Adapter<AddedItemAdapter.VH> 
     @Override
     public void onBindViewHolder(@NonNull VH h, int position) {
         ExpenseItem item = items.get(position);
-        h.tvName.setText(item.getName());
+        h.tvName.setText(Tr.data(item.getName()));
         h.tvAmount.setText("৳ " + bn.toBengali(
                 String.format(Locale.US, "%,.0f", item.getAmount())));
 
